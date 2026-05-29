@@ -48,8 +48,8 @@ const pointTargets = {
   spatial: 110000,
   history: 46000,
   structure: 52000,
-  materials: 50000,
-  protection: 52000,
+  materials: 68000,
+  protection: 90000,
 }
 
 let buildVersion = 0
@@ -149,9 +149,9 @@ function createMaterial(texture) {
       void main() {
         vec3 normal = normalize(aNormal);
         vec3 pos = position;
-        float breath = sin(uTime * 1.08 + aSeed * 6.2831) * 0.5 + 0.5;
+        float breath = sin(uTime * 1.42 + aSeed * 6.2831) * 0.5 + 0.5;
         pos += normal * (0.006 + aGlow * 0.012) * breath;
-        pos += tinyNoise(position * 18.0 + uTime * 0.2) * 0.0035;
+        pos += tinyNoise(position * 18.0 + uTime * 0.36) * 0.0035;
 
         vec4 clip = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
         vec2 screenPos = clip.xy / max(clip.w, 0.0001);
@@ -517,15 +517,9 @@ function buildChinaMapGroup() {
     y: ((lat - bounds.minY) / (bounds.maxY - bounds.minY) - 0.5) * 3.38,
     z,
   })
-  const inside = (lon, lat) =>
-    rings.some((item) => {
-      if (lon < item.bounds.minX || lon > item.bounds.maxX || lat < item.bounds.minY || lat > item.bounds.maxY) return false
-      return isPointInRing(lon, lat, item.ring)
-    })
-
   rings.slice(0, 80).forEach((item) => {
     if (item.area < 0.16) return
-    const step = Math.max(1, Math.ceil(item.ring.length / 180))
+    const step = Math.max(1, Math.ceil(item.ring.length / 240))
     const shapePoints = item.ring
       .filter((_, index) => index % step === 0)
       .map(([lon, lat]) => {
@@ -543,7 +537,7 @@ function buildChinaMapGroup() {
       })
       geometry.translate(0, 0, -0.11)
       addMesh(group, geometry, {
-        tone: item.area > 40 ? undefined : 'light',
+        tone: undefined,
         glow: item.area > 40 ? 0.16 : 0.2,
         size: item.area > 40 ? 0.88 : 0.74,
         density: item.area > 40 ? 1 : 0.7,
@@ -553,59 +547,23 @@ function buildChinaMapGroup() {
     }
   })
 
-  const route = (coords, tone, radius) => {
-    addTube(
-      group,
-      coords.map(([lon, lat]) => {
-        const p = project(lon, lat, 0.22)
+  rings.forEach((item) => {
+    if (item.area < 0.16) return
+    const step = Math.max(1, Math.ceil(item.ring.length / (item.area > 30 ? 260 : 120)))
+    const boundary = item.ring
+      .filter((_, index) => index % step === 0)
+      .map(([lon, lat]) => {
+        const p = project(lon, lat, 0.15)
         return [p.x, p.y, p.z]
-      }),
-      radius,
-      { tone, glow: 0.64, size: 0.9, density: 8 },
-    )
-  }
-
-  route(
-    [
-      [91.5, 32.2],
-      [99.5, 30.7],
-      [106.4, 30.4],
-      [112.6, 30.6],
-      [118.4, 31.3],
-      [121.4, 31.1],
-    ],
-    'river',
-    0.015,
-  )
-  route(
-    [
-      [96.2, 35.2],
-      [103.6, 36.1],
-      [108.9, 34.5],
-      [114.2, 35.2],
-      [119.2, 37.1],
-    ],
-    'river',
-    0.013,
-  )
-
-  ;[
-    [116.4, 39.9],
-    [108.94, 34.34],
-    [118.8, 32.06],
-    [120.58, 31.3],
-    [120.15, 30.25],
-    [117.94, 40.98],
-    [112.55, 37.87],
-    [113.3, 40.09],
-    [114.31, 30.52],
-    [104.06, 30.67],
-  ].forEach(([lon, lat], index) => {
-    if (!inside(lon, lat)) return
-    const p = project(lon, lat, 0.29)
-    addSphere(group, p.x, p.y, p.z, 0.052 + (index % 3) * 0.012, { tone: 'warm', glow: 0.76, size: 1.15, density: 10 })
-    addCylinder(group, p.x, p.y, p.z - 0.055, 0.012, 0.22, 'z', { tone: 'light', glow: 0.68, size: 0.86, density: 6 })
-    addDisc(group, p.x, p.y, p.z - 0.13, 0.13, 'z', { tone: 'warm', glow: 0.34, size: 0.72, density: 1.6 })
+      })
+    if (boundary.length < 3) return
+    boundary.push(boundary[0])
+    addTube(group, boundary, item.area > 30 ? 0.0065 : 0.0045, {
+      tone: item.area > 30 ? undefined : 'dark',
+      glow: item.area > 30 ? 0.34 : 0.18,
+      size: item.area > 30 ? 0.62 : 0.48,
+      density: item.area > 30 ? 6 : 4.4,
+    })
   })
 
   return { group, rotation: [0, 0, 0], viewSize: 3.62, haloRadius: 1.78 }
@@ -680,83 +638,184 @@ function buildPalaceGroup() {
 
 function buildMortiseGroup() {
   const group = new THREE.Group()
-  addBox(group, -0.36, 0, 0, 3.04, 0.52, 0.72, { tone: 'warm', glow: 0.2, size: 0.86, density: 1.1 })
-  addBox(group, 0.12, 0, -0.02, 0.48, 2.52, 0.68, { tone: 'warm', glow: 0.18, size: 0.84, density: 1.1 })
-  addBox(group, 0.58, 0.08, 0.4, 0.68, 0.3, 0.08, { tone: 'light', glow: 0.36, size: 0.82, density: 2.2 })
-  addBox(group, 0.32, 0.02, 0.45, 0.5, 0.36, 0.05, { tone: 'dark', glow: 0.08, size: 0.7, density: 2.5 })
-  addBox(group, -0.34, 0, 0.42, 0.38, 0.56, 0.06, { tone: 'dark', glow: 0.08, size: 0.68, density: 2.2 })
-  addCylinder(group, -1.72, 0, 0, 0.28, 0.08, 'x', { tone: 'warm', glow: 0.22, size: 0.7, density: 1.5 })
-  addCylinder(group, 1.15, 0, 0, 0.28, 0.08, 'x', { tone: 'warm', glow: 0.22, size: 0.7, density: 1.5 })
 
-  for (let row = 0; row < 9; row++) {
-    const y = -0.21 + row * 0.052
-    const z = 0.39 + (row % 2) * 0.018
-    addTube(group, [[-1.72, y, z], [1.08, y + Math.sin(row) * 0.04, z]], 0.005, { tone: 'light', glow: 0.2, size: 0.48, density: 8 })
-  }
-  for (let row = 0; row < 7; row++) {
-    const x = -0.08 + Math.sin(row * 0.8) * 0.025
-    addTube(group, [[x, -1.13, 0.38], [x + Math.sin(row) * 0.04, 1.12, 0.38]], 0.005, { tone: 'light', glow: 0.18, size: 0.46, density: 8 })
-  }
-  addTube(group, [[-0.04, -0.32, 0.5], [0.76, -0.32, 0.5]], 0.007, { tone: 'light', glow: 0.44, size: 0.62, density: 8 })
-  addTube(group, [[-0.04, 0.32, 0.5], [0.76, 0.32, 0.5]], 0.007, { tone: 'light', glow: 0.34, size: 0.62, density: 8 })
+  const beamOptions = { tone: 'warm', glow: 0.2, size: 0.78, density: 1.08 }
+  const capOptions = { tone: 'dark', glow: 0.08, size: 0.54, density: 1.6 }
+  const grooveOptions = { tone: 'dark', glow: 0.1, size: 0.42, density: 2.4 }
 
-  return { group, rotation: [0.72, -0.36, -0.15], viewSize: 3.85, haloRadius: 1.82 }
+  ;[-0.34, 0.34].forEach((z) => {
+    addBox(group, 0, 0, z, 3.1, 0.34, 0.34, beamOptions)
+    addBox(group, -1.58, 0, z, 0.16, 0.36, 0.36, capOptions)
+    addBox(group, 1.58, 0, z, 0.16, 0.36, 0.36, capOptions)
+    addBox(group, -0.42, 0.19, z, 0.42, 0.035, 0.22, grooveOptions)
+    addBox(group, 0.42, -0.19, z, 0.42, 0.035, 0.22, grooveOptions)
+  })
+
+  ;[-0.34, 0.34].forEach((x) => {
+    addBox(group, x, 0, 0, 0.34, 3.1, 0.34, { ...beamOptions, glow: 0.18 })
+    addBox(group, x, -1.58, 0, 0.36, 0.16, 0.36, capOptions)
+    addBox(group, x, 1.58, 0, 0.36, 0.16, 0.36, capOptions)
+    addBox(group, x, -0.42, 0.19, 0.22, 0.42, 0.035, grooveOptions)
+    addBox(group, x, 0.42, -0.19, 0.22, 0.42, 0.035, grooveOptions)
+  })
+
+  ;[-0.34, 0.34].forEach((y) => {
+    addBox(group, 0, y, 0, 0.34, 0.34, 3.1, { ...beamOptions, glow: 0.22 })
+    addBox(group, 0, y, -1.58, 0.36, 0.36, 0.16, capOptions)
+    addBox(group, 0, y, 1.58, 0.36, 0.36, 0.16, capOptions)
+    addBox(group, 0.19, y, -0.42, 0.035, 0.22, 0.42, grooveOptions)
+    addBox(group, -0.19, y, 0.42, 0.035, 0.22, 0.42, grooveOptions)
+  })
+
+  addBox(group, 0, 0, 0, 0.66, 0.66, 0.66, { tone: 'light', glow: 0.16, size: 0.58, density: 0.62 })
+
+  ;[
+    [[-1.36, 0.18, 0.52], [1.36, 0.18, 0.52]],
+    [[-1.36, -0.18, -0.52], [1.36, -0.18, -0.52]],
+    [[0.52, -1.36, 0.18], [0.52, 1.36, 0.18]],
+    [[-0.52, -1.36, -0.18], [-0.52, 1.36, -0.18]],
+    [[0.18, 0.52, -1.36], [0.18, 0.52, 1.36]],
+    [[-0.18, -0.52, -1.36], [-0.18, -0.52, 1.36]],
+  ].forEach((points, index) => {
+    addTube(group, points, 0.0045, {
+      tone: index % 2 ? 'ink' : 'light',
+      glow: 0.22,
+      size: 0.34,
+      density: 8,
+    })
+  })
+
+  ;[
+    [-0.82, 0.36, 0.36],
+    [0.82, -0.36, -0.36],
+    [0.36, -0.82, 0.36],
+    [-0.36, 0.82, -0.36],
+    [0.36, 0.36, -0.82],
+    [-0.36, -0.36, 0.82],
+  ].forEach(([x, y, z]) => {
+    addBox(group, x, y, z, 0.26, 0.045, 0.26, { tone: 'light', glow: 0.3, size: 0.38, density: 4 })
+  })
+
+  return { group, rotation: [0.58, -0.56, 0.18], viewSize: 3.35, haloRadius: 1.52 }
 }
 
 function buildProtectionGroup() {
   const group = new THREE.Group()
-  addRoof(group, 0, 0.04, 0, 2.64, 0.58, 0.5, { tone: 'warm', glow: 0.24, size: 0.8, density: 1.2 })
-  addBox(group, 0, -0.48, 0, 1.68, 0.66, 0.3, { tone: 'light', glow: 0.16, size: 0.76, density: 0.9 })
-  ;[-0.54, -0.18, 0.18, 0.54].forEach((x) => addCylinder(group, x, -0.6, 0.14, 0.044, 0.68, 'y', { tone: 'warm', glow: 0.22, size: 0.72, density: 2.2 }))
-  addBox(group, 0, -0.95, 0.02, 2.14, 0.13, 0.44, { tone: 'dark', glow: 0.08, size: 0.7, density: 0.9 })
-  addBox(group, 0, -0.36, 0.2, 0.36, 0.42, 0.05, { tone: 'dark', glow: 0.12, size: 0.64, density: 2 })
+  const sphereCenterY = -0.46
+  const sphereRadius = 1.58
 
-  addHemisphere(group, 0, -0.94, 0, 1.9, 1.18, { tone: 'glass', glow: 0.48, size: 0.58, density: 0.72 })
-  for (let i = 1; i <= 5; i++) {
-    const phi = (i / 6) * Math.PI * 0.5
-    const y = -0.94 + Math.cos(phi) * 2.24
-    const radius = Math.sin(phi) * 1.9
-    addMesh(group, new THREE.TorusGeometry(radius, 0.007, 8, 160), {
+  addSphere(group, 0, sphereCenterY, 0, sphereRadius, {
+    tone: 'glass',
+    glow: 0.38,
+    size: 0.42,
+    density: 0.48,
+  })
+
+  addMesh(group, new THREE.TorusGeometry(sphereRadius, 0.011, 10, 180), {
+    tone: 'glass',
+    glow: 0.78,
+    size: 0.62,
+    density: 3.6,
+    x: 0,
+    y: sphereCenterY,
+    z: 0,
+    rx: Math.PI / 2,
+  })
+
+  addMesh(group, new THREE.TorusGeometry(sphereRadius, 0.008, 8, 160), {
+    tone: 'glass',
+    glow: 0.6,
+    size: 0.48,
+    density: 2.8,
+    x: 0,
+    y: sphereCenterY,
+    z: 0,
+  })
+  addMesh(group, new THREE.TorusGeometry(sphereRadius, 0.008, 8, 160), {
+    tone: 'glass',
+    glow: 0.54,
+    size: 0.46,
+    density: 2.6,
+    x: 0,
+    y: sphereCenterY,
+    z: 0,
+    ry: Math.PI / 2,
+  })
+
+  ;[-0.86, -0.48, 0.48, 0.86].forEach((offset, index) => {
+    const latitudeRadius = Math.sqrt(Math.max(sphereRadius * sphereRadius - offset * offset, 0.1))
+    addMesh(group, new THREE.TorusGeometry(latitudeRadius, 0.0058, 8, 132), {
       tone: 'glass',
-      glow: 0.68,
-      size: 0.68,
-      density: 3,
+      glow: 0.48 - Math.abs(index - 1.5) * 0.05,
+      size: 0.38,
+      density: 2.4,
       x: 0,
-      y,
+      y: sphereCenterY + offset,
       z: 0,
       rx: Math.PI / 2,
     })
-  }
-  for (let i = 0; i < 9; i++) {
-    const theta = (i / 9) * Math.PI * 2
-    const arc = []
-    for (let j = 0; j <= 42; j++) {
-      const phi = (j / 42) * Math.PI * 0.5
-      arc.push([Math.cos(theta) * Math.sin(phi) * 1.9, -0.94 + Math.cos(phi) * 2.24, Math.sin(theta) * Math.sin(phi) * 1.9])
-    }
-    addTube(group, arc, 0.006, { tone: 'glass', glow: 0.62, size: 0.58, density: 4 })
-  }
-  addCylinder(group, 0, -0.98, 0, 1.92, 0.05, 'y', { tone: 'glass', glow: 0.7, size: 0.68, density: 2 })
-
-  ;[
-    [1.06, -0.12, 0.76],
-    [-1.04, -0.34, 0.68],
-    [0.62, 0.52, 0.54],
-    [-0.58, 0.38, 0.6],
-  ].forEach(([x, y, z], index) => {
-    addSphere(group, x, y, z, 0.07, { tone: 'alert', glow: 0.76, size: 0.96, density: 8 })
-    addMesh(group, new THREE.TorusGeometry(0.18 + index * 0.03, 0.005, 8, 72), {
-      tone: 'alert',
-      glow: 0.5,
-      size: 0.58,
-      density: 4,
-      x,
-      y,
-      z,
-    })
   })
 
-  return { group, rotation: [0.2, -0.34, 0], viewSize: 3.95, haloRadius: 1.86 }
+  for (let i = 0; i < 8; i++) {
+    const angle = (i / 8) * Math.PI * 2
+    const meridian = []
+    for (let j = 0; j <= 56; j++) {
+      const theta = (j / 56) * Math.PI * 2
+      meridian.push([Math.cos(angle) * Math.sin(theta) * sphereRadius, sphereCenterY + Math.cos(theta) * sphereRadius, Math.sin(angle) * Math.sin(theta) * sphereRadius])
+    }
+    addTube(group, meridian, i % 2 === 0 ? 0.0054 : 0.0044, {
+      tone: 'glass',
+      glow: i % 2 === 0 ? 0.42 : 0.3,
+      size: i % 2 === 0 ? 0.36 : 0.3,
+      density: 4.2,
+    })
+  }
+
+  addSphere(group, 0, sphereCenterY + sphereRadius + 0.04, 0, 0.055, {
+    tone: 'glass',
+    glow: 0.78,
+    size: 0.72,
+    density: 8,
+  })
+
+  addRoof(group, 0, -0.12, 0.02, 1.72, 0.38, 0.42, { tone: 'warm', glow: 0.24, size: 0.64, density: 1.25 })
+  addRoof(group, 0, -0.36, 0.06, 1.34, 0.26, 0.34, { tone: 'warm', glow: 0.18, size: 0.56, density: 1.12 })
+  addBox(group, 0, -0.58, 0.02, 1.12, 0.4, 0.24, { tone: 'light', glow: 0.14, size: 0.54, density: 0.92 })
+  addBox(group, 0, -0.48, 0.22, 0.98, 0.09, 0.06, { tone: 'warm', glow: 0.2, size: 0.46, density: 2 })
+  addBox(group, 0, -0.88, 0.04, 1.44, 0.11, 0.36, { tone: 'dark', glow: 0.09, size: 0.5, density: 0.9 })
+  addBox(group, 0, -1.04, 0.04, 1.68, 0.1, 0.4, { tone: 'dark', glow: 0.08, size: 0.46, density: 0.82 })
+
+  ;[-0.46, -0.23, 0, 0.23, 0.46].forEach((x) => {
+    addCylinder(group, x, -0.64, 0.22, 0.027, 0.42, 'y', { tone: 'warm', glow: 0.23, size: 0.48, density: 2.4 })
+    addBox(group, x, -0.41, 0.23, 0.1, 0.052, 0.08, { tone: 'warm', glow: 0.2, size: 0.4, density: 2.3 })
+  })
+
+  addBox(group, 0, -0.67, 0.25, 0.22, 0.25, 0.045, { tone: 'dark', glow: 0.12, size: 0.42, density: 2.1 })
+  ;[-0.31, 0.31].forEach((x) => {
+    addBox(group, x, -0.62, 0.26, 0.2, 0.15, 0.04, { tone: 'dark', glow: 0.13, size: 0.4, density: 2 })
+    addTube(group, [[x - 0.095, -0.62, 0.29], [x + 0.095, -0.62, 0.29]], 0.0035, { tone: 'light', glow: 0.24, size: 0.3, density: 8 })
+    addTube(group, [[x, -0.7, 0.29], [x, -0.54, 0.29]], 0.0035, { tone: 'light', glow: 0.22, size: 0.3, density: 8 })
+  })
+
+  addTube(group, [[-0.9, -0.28, 0.3], [0, 0.08, 0.32], [0.9, -0.28, 0.3]], 0.005, {
+    tone: 'light',
+    glow: 0.34,
+    size: 0.38,
+    density: 8,
+  })
+
+  addMesh(group, new THREE.TorusGeometry(1.2, 0.006, 8, 150), {
+    tone: 'glass',
+    glow: 0.32,
+    size: 0.34,
+    density: 1.5,
+    x: 0,
+    y: -0.94,
+    z: 0,
+    rx: Math.PI / 2,
+  })
+
+  return { group, rotation: [0.16, -0.32, 0], viewSize: 3.28, haloRadius: 1.52 }
 }
 
 async function createSculptureGeometry(sceneName) {
@@ -907,7 +966,7 @@ function animate() {
   if (sculpture) {
     rotationCurrent.lerp(rotationTarget, 0.12)
     sculpture.rotation.set(rotationCurrent.x, rotationCurrent.y, rotationCurrent.z)
-    sculpture.material.uniforms.uTime.value = elapsed
+    sculpture.material.uniforms.uTime.value = elapsed * 1.5
     sculpture.material.uniforms.uMouse.value.copy(pointerCurrent)
     sculpture.material.uniforms.uInteraction.value += (interaction - sculpture.material.uniforms.uInteraction.value) * 0.08
   }

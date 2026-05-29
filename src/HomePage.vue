@@ -12,25 +12,18 @@
           <p v-for="paragraph in heroIntro" :key="paragraph">{{ paragraph }}</p>
         </div>
         <div class="hero-actions">
-          <a class="primary-link" :href="activeProject.entry">进入当前专题</a>
           <button class="plain-btn" type="button" @click="scrollToTopics">下滑浏览专题</button>
           <span class="load-state">{{ loadState }}</span>
         </div>
       </section>
 
-      <button class="scroll-cue" type="button" @click="scrollToTopics">
-        <span>向下</span>
+      <button class="scroll-cue" type="button" aria-label="向下滑动浏览专题" @click="scrollToTopics">
+        <span class="scroll-arrow" aria-hidden="true"></span>
+        <span class="scroll-arrow" aria-hidden="true"></span>
       </button>
     </section>
 
     <section ref="topicsSection" class="topic-screen">
-      <div class="topic-rail-head">
-        <div class="rail-actions">
-          <button type="button" @click="scrollToProject(activeIndex - 1)">上一屏</button>
-          <button type="button" @click="scrollToProject(activeIndex + 1)">下一屏</button>
-        </div>
-      </div>
-
       <div ref="topicScroller" class="topic-scroller" @scroll="onTopicScroll" @wheel="onTopicWheel">
         <article
           v-for="(project, index) in projects"
@@ -39,9 +32,6 @@
           :class="{ active: index === activeIndex }"
         >
           <div class="slide-copy">
-            <span class="slide-order">{{ project.order }}</span>
-            <p class="eyebrow">{{ project.kicker }}</p>
-            <h3>{{ project.name }}</h3>
             <p class="slide-title-note">{{ project.sectionTitle }}</p>
             <p class="slide-lead">{{ project.description }}</p>
             <div class="slide-story">
@@ -57,7 +47,6 @@
               <span></span>
               <span></span>
             </div>
-            <strong>{{ project.shortName }}</strong>
           </div>
         </article>
       </div>
@@ -68,10 +57,9 @@
           :key="`dot-${project.id}`"
           type="button"
           :class="{ active: index === activeIndex }"
+          :aria-label="project.name"
           @click="scrollToProject(index)"
-        >
-          <span>{{ project.shortName }}</span>
-        </button>
+        ></button>
       </div>
     </section>
   </main>
@@ -477,9 +465,9 @@ function createParticleSystem(positions, normals) {
 
       void main() {
         vec3 pos = position;
-        float breath = sin(uTime * 1.15 + aSeed * 6.2831) * 0.5 + 0.5;
+        float breath = sin(uTime * 1.45 + aSeed * 6.2831) * 0.5 + 0.5;
         pos += aNormal * breath * 0.008;
-        pos += noise3d(position * 12.0 + uTime * 0.18) * 0.004;
+        pos += noise3d(position * 12.0 + uTime * 0.32) * 0.004;
 
         vec4 baseClip = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
         vec2 screenPos = baseClip.xy / max(baseClip.w, 0.0001);
@@ -488,7 +476,7 @@ function createParticleSystem(positions, normals) {
 
         vec3 lightDir = normalize(vec3(-0.32, 0.9, 0.46));
         vLight = 0.74 + max(dot(normalize(normalMatrix * aNormal), lightDir), 0.0) * 1.05;
-        vAgeFlow = sin(position.y * 3.2 + uTime * 0.9 + aSeed * 6.2831) * 0.5 + 0.5;
+        vAgeFlow = sin(position.y * 3.2 + uTime * 1.35 + aSeed * 6.2831) * 0.5 + 0.5;
         vInteraction = pointerInfluence;
 
         vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
@@ -554,7 +542,7 @@ function animate() {
     pointerCurrent.lerp(pointerTarget, 0.12)
     interactionCurrent += (interactionTarget - interactionCurrent) * 0.1
 
-    particleSystem.material.uniforms.uTime.value = elapsedTime
+    particleSystem.material.uniforms.uTime.value = elapsedTime * 1.45
     particleSystem.material.uniforms.uInteraction.value = interactionCurrent
     particleSystem.material.uniforms.uPointSize.value = PARTICLE_BASE_SIZE + interactionCurrent * 0.55
   }
@@ -660,8 +648,7 @@ onBeforeUnmount(() => {
     linear-gradient(180deg, rgba(37, 71, 70, 0.06), transparent);
 }
 
-.plain-btn,
-.rail-actions button {
+.plain-btn {
   border: 1px solid rgba(79, 140, 135, 0.32);
   border-radius: 6px;
   color: #355f5f;
@@ -733,19 +720,6 @@ onBeforeUnmount(() => {
   margin-top: 36px;
 }
 
-.primary-link {
-  display: inline-flex;
-  align-items: center;
-  height: 44px;
-  padding: 0 24px;
-  border-radius: 6px;
-  color: #fff;
-  background: linear-gradient(135deg, #4f8c87, #355f5f);
-  box-shadow: 0 14px 34px rgba(53, 95, 95, 0.24);
-  font-weight: 900;
-  text-decoration: none;
-}
-
 .plain-btn {
   height: 44px;
   padding: 0 18px;
@@ -761,47 +735,66 @@ onBeforeUnmount(() => {
   left: 32px;
   bottom: 26px;
   z-index: 1;
-  width: 44px;
-  height: 72px;
+  width: 52px;
+  height: 78px;
+  display: grid;
+  place-content: center;
+  gap: 2px;
   border: 1px solid rgba(79, 140, 135, 0.3);
   border-radius: 999px;
   color: #355f5f;
   background: rgba(255, 255, 255, 0.48);
   cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    transform 180ms ease;
 }
 
-.scroll-cue span {
-  writing-mode: vertical-rl;
-  font-size: 12px;
-  font-weight: 900;
+.scroll-cue:hover {
+  transform: translateY(2px);
+  border-color: rgba(53, 95, 95, 0.42);
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.scroll-arrow {
+  width: 14px;
+  height: 14px;
+  border-right: 2px solid #355f5f;
+  border-bottom: 2px solid #355f5f;
+  transform: rotate(45deg);
+  opacity: 0.42;
+  animation: scrollArrowPulse 1.45s ease-in-out infinite;
+}
+
+.scroll-arrow:nth-child(2) {
+  animation-delay: 0.18s;
+}
+
+@keyframes scrollArrowPulse {
+  0% {
+    opacity: 0.18;
+    transform: translateY(-5px) rotate(45deg);
+  }
+
+  48% {
+    opacity: 0.86;
+  }
+
+  100% {
+    opacity: 0.18;
+    transform: translateY(7px) rotate(45deg);
+  }
 }
 
 .topic-screen {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto;
   gap: 12px;
   padding: 26px 28px 22px;
   background:
     linear-gradient(135deg, rgba(237, 246, 243, 0.96), rgba(228, 237, 231, 0.96)),
     radial-gradient(circle at 80% 12%, rgba(79, 140, 135, 0.18), transparent 34%);
-}
-
-.topic-rail-head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  gap: 20px;
-  min-height: 38px;
-}
-
-.rail-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.rail-actions button {
-  height: 36px;
-  padding: 0 13px;
 }
 
 .topic-scroller {
@@ -833,6 +826,20 @@ onBeforeUnmount(() => {
   background:
     linear-gradient(135deg, rgba(251, 255, 253, 0.92), rgba(236, 245, 241, 0.84)),
     linear-gradient(120deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0));
+  opacity: 0.42;
+  filter: saturate(0.78);
+  transform: scale(0.972);
+  transform-origin: center;
+  transition:
+    opacity 520ms ease,
+    filter 520ms ease,
+    transform 620ms cubic-bezier(0.2, 0.78, 0.22, 1);
+}
+
+.topic-slide.active {
+  opacity: 1;
+  filter: saturate(1);
+  transform: scale(1);
 }
 
 .slide-copy {
@@ -841,28 +848,12 @@ onBeforeUnmount(() => {
   min-width: 0;
 }
 
-.slide-order {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border: 1px solid rgba(79, 140, 135, 0.28);
-  border-radius: 50%;
-  color: #6f6a58;
-  font-weight: 950;
-}
-
-.slide-copy h3 {
-  margin: 18px 0 0;
-  color: #254746;
-  font-size: clamp(34px, 5vw, 74px);
-  line-height: 0.94;
-  letter-spacing: 0;
+.topic-slide.active .slide-copy {
+  animation: topicCopyIn 620ms cubic-bezier(0.2, 0.78, 0.22, 1) both;
 }
 
 .slide-title-note {
-  margin: 14px 0 0;
+  margin: 0;
   color: #355f5f;
   font-size: clamp(18px, 1.75vw, 26px);
   line-height: 1.36;
@@ -913,6 +904,16 @@ onBeforeUnmount(() => {
   background: #355f5f;
   font-weight: 900;
   text-decoration: none;
+  transition:
+    background 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.slide-copy a:hover {
+  transform: translateY(-1px);
+  background: #254746;
+  box-shadow: 0 10px 24px rgba(37, 71, 70, 0.18);
 }
 
 .slide-visual {
@@ -928,6 +929,10 @@ onBeforeUnmount(() => {
     linear-gradient(135deg, color-mix(in srgb, var(--accent), #ffffff 82%), rgba(255, 255, 255, 0.62));
   background-size: 38px 38px, 38px 38px, auto, auto;
   box-shadow: inset 0 0 0 1px rgba(79, 140, 135, 0.16);
+}
+
+.topic-slide.active .slide-visual {
+  animation: topicVisualIn 720ms cubic-bezier(0.2, 0.78, 0.22, 1) both;
 }
 
 .slide-visual::before {
@@ -971,39 +976,38 @@ onBeforeUnmount(() => {
   display: grid;
   place-items: center;
   pointer-events: none;
+  transition:
+    opacity 420ms ease,
+    transform 620ms cubic-bezier(0.2, 0.78, 0.22, 1);
 }
 
 .particle-rings span {
   position: absolute;
+  --ring-rotate: -12deg;
   width: min(72%, 460px);
   aspect-ratio: 1 / 0.58;
   border: 1px solid color-mix(in srgb, var(--accent), transparent 46%);
   border-radius: 50%;
-  transform: rotate(-12deg);
+  transform: rotate(var(--ring-rotate)) scale(1);
   opacity: 0.52;
 }
 
 .particle-rings span:nth-child(2) {
+  --ring-rotate: 19deg;
   width: min(58%, 350px);
-  transform: rotate(19deg);
+  transform: rotate(var(--ring-rotate)) scale(1);
   opacity: 0.36;
 }
 
 .particle-rings span:nth-child(3) {
+  --ring-rotate: 45deg;
   width: min(44%, 270px);
-  transform: rotate(45deg);
+  transform: rotate(var(--ring-rotate)) scale(1);
   opacity: 0.28;
 }
 
-.slide-visual strong {
-  position: absolute;
-  left: 44px;
-  bottom: 38px;
-  z-index: 2;
-  color: rgba(37, 71, 70, 0.14);
-  font-size: clamp(64px, 9vw, 150px);
-  line-height: 1;
-  font-weight: 950;
+.topic-slide.active .particle-rings span {
+  animation: particleRingWake 1800ms ease-in-out infinite alternate;
 }
 
 .topic-dots {
@@ -1014,19 +1018,70 @@ onBeforeUnmount(() => {
 }
 
 .topic-dots button {
-  height: 34px;
-  padding: 0 12px;
+  width: 34px;
+  height: 10px;
+  padding: 0;
   border: 1px solid rgba(79, 140, 135, 0.26);
   border-radius: 999px;
   color: #557b79;
   background: rgba(255, 255, 255, 0.52);
   cursor: pointer;
   font-weight: 800;
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    transform 180ms ease,
+    border-color 180ms ease;
+}
+
+.topic-dots button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(53, 95, 95, 0.36);
 }
 
 .topic-dots button.active {
+  width: 52px;
   color: #fff;
   background: #355f5f;
+  transform: translateY(-1px);
+}
+
+@keyframes topicCopyIn {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes topicVisualIn {
+  from {
+    opacity: 0.28;
+    filter: blur(10px) saturate(0.82);
+    transform: translateX(24px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0) saturate(1);
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes particleRingWake {
+  from {
+    opacity: 0.24;
+    transform: rotate(var(--ring-rotate)) scale(0.98);
+  }
+
+  to {
+    opacity: 0.58;
+    transform: rotate(var(--ring-rotate)) scale(1.02);
+  }
 }
 
 @media (max-width: 900px) {

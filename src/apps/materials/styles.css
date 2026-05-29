@@ -1,0 +1,48 @@
+:root {
+  --bg-1: rgb(221, 240, 238);
+  --bg-2: rgb(214, 235, 232);
+  --primary: rgb(98, 138, 138);
+  --primary-deep: #3e5e5d;
+  --panel-bg: rgba(255, 255, 255, 0.28);
+  --panel-border: rgba(98, 138, 138, 0.28);
+  --panel-shadow: rgba(98, 138, 138, 0.12);
+  --wood: #b88b5a;
+  --stone: #8a9a9a;
+  --glaze: #7cb7a8;
+  --brick: #c1977b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  color: var(--primary-deep);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.55), transparent 28%),
+    radial-gradient(circle at 80% 15%, rgba(255,255,255,0.35), transparent 24%),
+    linear-gradient(180deg, var(--bg-1), var(--bg-2));
+}
+
+#app { width: 100%; height: 100%; }
+
+.panel-card {
+  position: relative;
+  background: linear-gradient(180deg, rgba(255,255,255,0.40), rgba(255,255,255,0.18));
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 12px 30px var(--panel-shadow);
+  border-radius: 22px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.panel-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(255,255,255,0.24), transparent 40%, rgba(255,255,255,0.06));
+  pointer-events: none;
+}
+
+.chart-box {
+  width: 100%;
+  height: 100%;
+}

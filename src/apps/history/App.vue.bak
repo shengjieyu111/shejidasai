@@ -1,0 +1,20 @@
+﻿Set-Location 'D:\数据可视化\my-vue-app'; $content = @'
+<template>
+  <div class="app">
+    <h1>中国古代建筑地域分布</h1>
+    <div class="page">
+      <div class="chart-panel">
+        <div ref="chartRef" class="chart"></div>
+      </div>
+      <div class="info-panel">
+        <h2>建筑信息</h2>
+        <div class="hint">✔ 点击地图省份或右侧按钮查看建筑详情</div>
+        <div class="region-list">
+          <button
+            v-for="item in regionData"
+            :key="item.name"
+            :class="{ active: selected.name === item.name }"
+            @click="selectRegion(item)">
+            {{ item.name }}
+          </button>
+        </div>

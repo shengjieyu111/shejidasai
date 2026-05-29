@@ -1,0 +1,54 @@
+﻿* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --mint-1: rgb(214, 235, 232);
+  --mint-2: rgb(98, 138, 138);
+  --mint-3: rgb(221, 240, 238);
+  --ink: rgb(46, 78, 78);
+  color: var(--ink);
+  background: var(--mint-3);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: radial-gradient(circle at top, rgba(214, 235, 232, 0.95), transparent 28%), linear-gradient(180deg, rgb(221, 240, 238) 0%, rgb(214, 235, 232) 100%);
+  font-family: 'Segoe UI', 'Roboto', 'Noto Serif SC', 'Microsoft YaHei', serif;
+  color: var(--ink);
+  overflow: hidden;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+#app {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 14px;
+}
+
+@media (max-width: 1380px) {
+  body {
+    overflow: auto;
+  }
+}
+
+@media (max-width: 1280px) {
+  #app {
+    padding: 12px;
+  }
+}

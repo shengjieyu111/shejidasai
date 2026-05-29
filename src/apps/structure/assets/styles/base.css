@@ -1,0 +1,54 @@
+:root {
+  --mint-100: rgb(221, 240, 238);
+  --mint-200: rgb(214, 235, 232);
+  --mint-300: #b8d8d2;
+  --teal-500: rgb(98, 138, 138);
+  --teal-700: #315f5d;
+  --teal-900: #163f3d;
+  --leaf-500: #6fa58d;
+  --jade-500: #4d9a88;
+  --warm-500: #c8a96a;
+  --ink-900: #132927;
+  --ink-700: #31504d;
+  --ink-500: #5b7470;
+  --surface: rgba(248, 253, 252, 0.9);
+  --line: rgba(98, 138, 138, 0.24);
+  --shadow: 0 18px 46px rgba(36, 86, 82, 0.13);
+  font-family:
+    "Microsoft YaHei",
+    "PingFang SC",
+    "Hiragino Sans GB",
+    Arial,
+    sans-serif;
+  color: var(--ink-900);
+  background: var(--mint-100);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  min-width: 1280px;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+}
+
+button {
+  font: inherit;
+}
+
+.mono {
+  font-family: "DIN Alternate", "Bahnschrift", "Segoe UI", sans-serif;
+}

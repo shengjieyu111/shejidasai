@@ -1,0 +1,55 @@
+{
+  "name": "huagou-gongyun-merged-vue",
+  "private": true,
+  "version": "1.0.0",
+  "description": "SinoCraft Vis desktop visualization app",
+  "author": "SinoCraft Vis",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "start": "electron .",
+    "electron:preview": "npm run build && electron .",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder"
+  },
+  "dependencies": {
+    "echarts": "^5.6.0",
+    "echarts-wordcloud": "^2.1.0",
+    "swiper": "^12.1.3",
+    "three": "^0.184.0",
+    "vue": "^3.5.32",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "electron": "^41.3.0",
+    "electron-builder": "^26.8.1",
+    "vite": "^6.2.0"
+  },
+  "build": {
+    "appId": "com.sinocraft.vis",
+    "productName": "SinoCraft Vis",
+    "npmRebuild": false,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

@@ -5,11 +5,12 @@
 
       <section class="hero-copy">
         <p class="eyebrow">中国古建筑数字可视化系统</p>
+        <span class="brand-latin">SinoCraft Vis</span>
         <h1>华构工韵</h1>
-        <p>
-          以空间分布、历史演化、形制结构、材料工艺与保护风险为线索，
-          构建古建筑专题数据的统一入口。
-        </p>
+        <p class="hero-tagline">与你一起，看见中国古建筑的千年回响</p>
+        <div class="hero-narrative">
+          <p v-for="paragraph in heroIntro" :key="paragraph">{{ paragraph }}</p>
+        </div>
         <div class="hero-actions">
           <a class="primary-link" :href="activeProject.entry">进入当前专题</a>
           <button class="plain-btn" type="button" @click="scrollToTopics">下滑浏览专题</button>
@@ -24,10 +25,6 @@
 
     <section ref="topicsSection" class="topic-screen">
       <div class="topic-rail-head">
-        <div>
-          <p class="eyebrow">专题大屏</p>
-          <h2>{{ activeProject.name }}</h2>
-        </div>
         <div class="rail-actions">
           <button type="button" @click="scrollToProject(activeIndex - 1)">上一屏</button>
           <button type="button" @click="scrollToProject(activeIndex + 1)">下一屏</button>
@@ -45,14 +42,20 @@
             <span class="slide-order">{{ project.order }}</span>
             <p class="eyebrow">{{ project.kicker }}</p>
             <h3>{{ project.name }}</h3>
-            <p>{{ project.description }}</p>
+            <p class="slide-title-note">{{ project.sectionTitle }}</p>
+            <p class="slide-lead">{{ project.description }}</p>
+            <div class="slide-story">
+              <p v-for="paragraph in project.story" :key="paragraph">{{ paragraph }}</p>
+            </div>
             <a :href="project.entry">进入页面</a>
           </div>
 
-          <div class="slide-visual" :style="{ '--accent': project.color }">
-            <div class="orb"></div>
-            <div class="screen-lines">
-              <span v-for="line in 9" :key="line"></span>
+          <div class="slide-visual" :class="`scene-${project.id}`" :style="{ '--accent': project.color }">
+            <TopicParticleSculpture :scene="project.id" :accent="project.color" :active="index === activeIndex" />
+            <div class="particle-rings" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
             <strong>{{ project.shortName }}</strong>
           </div>
@@ -79,7 +82,13 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import TopicParticleSculpture from './components/TopicParticleSculpture.vue'
 import modelUrl from './modelToUsed.glb?url'
+
+const heroIntro = [
+  '中国古建筑从来不只是古老的房屋。它们站在山河之间，穿过朝代、风雨与人间烟火，把一代代人的审美、技艺和生活方式留到了今天。',
+  '华构工韵 SinoCraft Vis 想做的，是陪你重新靠近它们。不是隔着资料去阅读，也不是停留在遥远的欣赏，而是通过数据、图像与交互，让那些沉默已久的建筑，再一次被看见、被理解、被珍惜。',
+]
 
 const projects = [
   {
@@ -88,7 +97,13 @@ const projects = [
     shortName: '空间',
     name: '空间分布大屏',
     kicker: 'Spatial Distribution',
-    description: '展示古建筑保护单位在全国与省域尺度上的分布密度、区域差异和空间聚集关系。',
+    sectionTitle: '我们从一张地图开始，重新点亮古建筑的位置',
+    description: '从一张中国地图开始。',
+    story: [
+      '当古建筑被重新放回山河之间，你会看到，它们像星点一样在大地上亮起。有的靠近古城，有的隐入群山，有的沿着河流生长，有的留在村落深处。',
+      '这些点位并不只是坐标。它们是文明停留过的地方，是时间在大地上留下的印记。',
+      '在空间分布大屏里，我们希望先陪你了解一个最朴素的问题：这些古建筑在哪里？而当你看见它们的位置，也会慢慢看见它们独特的文化和历史。',
+    ],
     entry: './spatial.html',
     color: '#4f8aa0',
   },
@@ -98,7 +113,13 @@ const projects = [
     shortName: '历史',
     name: '历史演化图谱',
     kicker: 'History Timeline',
-    description: '从朝代脉络、建筑样本和修缮信息观察古建筑遗产的形成、延续与演变。',
+    sectionTitle: '我们沿着时间，寻找建筑风格留下的年轮',
+    description: '走过地图后，我们再把时间轻轻展开。',
+    story: [
+      '你会发现，古建筑并不是停在某个朝代里的旧物。唐的开阔，宋的清雅，元的交融，明清的沉稳，都曾在建筑身上留下痕迹。它们像年轮一样，一层层写进屋檐、院落与空间的气韵之中。',
+      '历史演化图谱，是一条可以慢慢阅读的时间长河。你要看到的不只是“它属于哪个时代”，而是它怎样从历史深处走来，又怎样带着一个时代的气质，留在今天。',
+      '当时间被看见，古建筑也就不再遥远。',
+    ],
     entry: './history.html',
     color: '#c35d4f',
   },
@@ -108,7 +129,13 @@ const projects = [
     shortName: '结构',
     name: '形制结构分析',
     kicker: 'Structure Dashboard',
-    description: '围绕建筑类型、构造层级、地域特征和样本表格进行结构形制专题分析。',
+    sectionTitle: '走近建筑，读懂它沉默的秩序',
+    description: '如果再靠近一些，你会发现，古建筑的美并不只在外表。',
+    story: [
+      '它的端正、舒展、克制与庄重，背后都有属于东方营造的分寸。那些不轻易显露的秩序，藏在梁柱之间，也藏在空间的呼吸里。',
+      '形制结构分析大屏，不是把建筑拆成冰冷的构件，而是陪你慢慢读懂它为什么这样存在。为什么它看起来庄重，为什么它显得舒展，为什么千年之后，仍然有一种安静而稳定的力量。',
+      '我们希望你在这里看到的，不只是建筑的形，更是形背后的精神。',
+    ],
     entry: './structure.html',
     color: '#8b6f3d',
   },
@@ -118,7 +145,13 @@ const projects = [
     shortName: '材料',
     name: '材料工艺大屏',
     kicker: 'Materials Craft',
-    description: '梳理木、砖、石、瓦等材料及其传统工艺流程、来源关系和构造表达。',
+    sectionTitle: '我们把目光落到木石砖瓦，听见匠作的回声',
+    description: '再靠近一些，建筑开始拥有温度。',
+    story: [
+      '木材有纹理，砖瓦有烧痕，石料有重量，彩绘有余韵。那些被时间留下来的痕迹，像是匠人与材料之间的低声对话。',
+      '材料工艺大屏，想带你看见一座建筑如何从木石砖瓦开始，慢慢拥有自己的生命。它是被建造出来的，也是被选择、打磨、连接与守护出来的。',
+      '在这里，数据不再只是数字。它像一束光，照进梁架深处，让匠心变得可以被看见，也可以被记住。',
+    ],
     entry: './materials.html',
     color: '#4f8d70',
   },
@@ -128,7 +161,13 @@ const projects = [
     shortName: '保护',
     name: '保护风险看板',
     kicker: 'Protection Risk',
-    description: '聚焦病害识别、风险预警、数字化进度和修缮投入，服务保护状态研判。',
+    sectionTitle: '我们把故事收束到今天，回应古建筑的未来',
+    description: '故事最后，我们回到今天。',
+    story: [
+      '这些古建筑穿越千年而来，却仍然承受着风雨、老化、病害与环境变化。它们曾经见证过去，也正在把问题交给现在的人。',
+      '看见它们，是开始。理解它们之后，更重要的是守护它们。',
+      '保护风险看板，是华构工韵面向未来的一束光。它让古建筑当下的状态被看见，也让保护不再只是情感上的惋惜，而成为更清晰、更主动的行动。',
+    ],
     entry: './protection.html',
     color: '#b34c68',
   },
@@ -634,9 +673,9 @@ onBeforeUnmount(() => {
 .hero-copy {
   position: relative;
   z-index: 1;
-  width: min(680px, 58vw);
+  width: min(760px, 58vw);
   margin-left: 32px;
-  padding-top: min(24vh, 190px);
+  padding-top: min(16vh, 128px);
 }
 
 .eyebrow {
@@ -648,20 +687,42 @@ onBeforeUnmount(() => {
 }
 
 .hero-copy h1 {
-  margin: 0;
+  margin: 6px 0 0;
   color: #254746;
-  font-size: clamp(66px, 8.5vw, 138px);
+  font-size: clamp(60px, 7.5vw, 124px);
   line-height: 0.92;
   font-weight: 950;
   letter-spacing: 0;
 }
 
-.hero-copy p:not(.eyebrow) {
+.brand-latin {
+  display: block;
+  color: #4f8c87;
+  font-size: clamp(18px, 2.2vw, 32px);
+  line-height: 1;
+  font-weight: 950;
+}
+
+.hero-tagline {
+  margin: 16px 0 0;
+  color: #355f5f;
+  font-size: clamp(21px, 2.1vw, 32px);
+  line-height: 1.35;
+  font-weight: 900;
+}
+
+.hero-narrative {
   width: min(610px, 100%);
-  margin: 24px 0 0;
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.hero-narrative p {
+  margin: 0;
   color: #557b79;
-  font-size: clamp(17px, 1.5vw, 23px);
-  line-height: 1.76;
+  font-size: clamp(15px, 1.25vw, 19px);
+  line-height: 1.68;
 }
 
 .hero-actions {
@@ -718,7 +779,7 @@ onBeforeUnmount(() => {
 .topic-screen {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 18px;
+  gap: 12px;
   padding: 26px 28px 22px;
   background:
     linear-gradient(135deg, rgba(237, 246, 243, 0.96), rgba(228, 237, 231, 0.96)),
@@ -728,16 +789,9 @@ onBeforeUnmount(() => {
 .topic-rail-head {
   display: flex;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 20px;
-  min-height: 74px;
-}
-
-.topic-rail-head h2 {
-  margin: 0;
-  color: #254746;
-  font-size: clamp(30px, 4vw, 56px);
-  line-height: 1;
+  min-height: 38px;
 }
 
 .rail-actions {
@@ -784,6 +838,7 @@ onBeforeUnmount(() => {
 .slide-copy {
   align-self: center;
   max-width: 680px;
+  min-width: 0;
 }
 
 .slide-order {
@@ -801,23 +856,57 @@ onBeforeUnmount(() => {
 .slide-copy h3 {
   margin: 18px 0 0;
   color: #254746;
-  font-size: clamp(42px, 6.5vw, 92px);
+  font-size: clamp(34px, 5vw, 74px);
   line-height: 0.94;
   letter-spacing: 0;
 }
 
-.slide-copy p:not(.eyebrow) {
-  margin: 24px 0 0;
+.slide-title-note {
+  margin: 14px 0 0;
+  color: #355f5f;
+  font-size: clamp(18px, 1.75vw, 26px);
+  line-height: 1.36;
+  font-weight: 900;
+}
+
+.slide-lead {
+  margin: 12px 0 0;
   color: #557b79;
-  font-size: clamp(17px, 1.7vw, 25px);
-  line-height: 1.7;
+  font-size: clamp(16px, 1.35vw, 20px);
+  line-height: 1.62;
+  font-weight: 800;
+}
+
+.slide-story {
+  max-height: clamp(154px, 26vh, 246px);
+  margin-top: 12px;
+  padding-right: 10px;
+  overflow: auto;
+  display: grid;
+  gap: 8px;
+}
+
+.slide-story::-webkit-scrollbar {
+  width: 4px;
+}
+
+.slide-story::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(79, 140, 135, 0.28);
+}
+
+.slide-story p {
+  margin: 0;
+  color: #557b79;
+  font-size: clamp(14px, 1.08vw, 17px);
+  line-height: 1.62;
 }
 
 .slide-copy a {
   display: inline-flex;
   align-items: center;
   height: 42px;
-  margin-top: 30px;
+  margin-top: 18px;
   padding: 0 20px;
   border-radius: 6px;
   color: #fff;
@@ -833,42 +922,84 @@ onBeforeUnmount(() => {
   overflow: hidden;
   border-radius: 10px;
   background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.58) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.58) 1px, transparent 1px),
-    linear-gradient(135deg, color-mix(in srgb, var(--accent), #ffffff 78%), rgba(255, 255, 255, 0.58));
-  background-size: 38px 38px, 38px 38px, auto;
+    linear-gradient(90deg, rgba(255, 255, 255, 0.54) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.54) 1px, transparent 1px),
+    radial-gradient(circle at 58% 46%, color-mix(in srgb, var(--accent), transparent 70%), transparent 34%),
+    linear-gradient(135deg, color-mix(in srgb, var(--accent), #ffffff 82%), rgba(255, 255, 255, 0.62));
+  background-size: 38px 38px, 38px 38px, auto, auto;
   box-shadow: inset 0 0 0 1px rgba(79, 140, 135, 0.16);
 }
 
-.orb {
+.slide-visual::before {
+  content: "";
   position: absolute;
-  right: -120px;
-  bottom: -130px;
-  width: 390px;
-  height: 390px;
-  border-radius: 50%;
-  background: var(--accent);
-  opacity: 0.32;
-  filter: blur(2px);
+  inset: 26px;
+  border: 1px solid color-mix(in srgb, var(--accent), transparent 58%);
+  border-radius: 10px;
+  pointer-events: none;
 }
 
-.screen-lines {
+.slide-visual::after {
+  content: "";
   position: absolute;
-  inset: 46px;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.78), transparent 32%, transparent 68%, rgba(255, 255, 255, 0.24)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 52%, rgba(37, 71, 70, 0.08));
+}
+
+.scene-history .particle-rings {
+  transform: rotate(-8deg);
+}
+
+.scene-structure .particle-rings,
+.scene-materials .particle-rings,
+.scene-protection .particle-rings {
+  opacity: 0.72;
+}
+
+.scene-spatial .particle-rings {
+  opacity: 0.36;
+  transform: perspective(700px) rotateX(58deg) rotateZ(-10deg);
+}
+
+.particle-rings {
+  position: absolute;
+  inset: 54px 48px;
+  z-index: 0;
   display: grid;
-  grid-template-rows: repeat(9, 1fr);
-  gap: 14px;
+  place-items: center;
+  pointer-events: none;
 }
 
-.screen-lines span {
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(53, 95, 95, 0.28), rgba(255, 255, 255, 0));
+.particle-rings span {
+  position: absolute;
+  width: min(72%, 460px);
+  aspect-ratio: 1 / 0.58;
+  border: 1px solid color-mix(in srgb, var(--accent), transparent 46%);
+  border-radius: 50%;
+  transform: rotate(-12deg);
+  opacity: 0.52;
+}
+
+.particle-rings span:nth-child(2) {
+  width: min(58%, 350px);
+  transform: rotate(19deg);
+  opacity: 0.36;
+}
+
+.particle-rings span:nth-child(3) {
+  width: min(44%, 270px);
+  transform: rotate(45deg);
+  opacity: 0.28;
 }
 
 .slide-visual strong {
   position: absolute;
   left: 44px;
   bottom: 38px;
+  z-index: 2;
   color: rgba(37, 71, 70, 0.14);
   font-size: clamp(64px, 9vw, 150px);
   line-height: 1;
@@ -902,7 +1033,7 @@ onBeforeUnmount(() => {
   .hero-copy {
     width: auto;
     margin: 0 18px;
-    padding-top: 82px;
+    padding-top: 58px;
   }
 
   .model-stage {
@@ -920,10 +1051,15 @@ onBeforeUnmount(() => {
   .topic-slide {
     grid-template-columns: 1fr;
     gap: 22px;
+    padding: 24px;
   }
 
   .slide-visual {
     min-height: 260px;
+  }
+
+  .slide-story {
+    max-height: 176px;
   }
 }
 </style>

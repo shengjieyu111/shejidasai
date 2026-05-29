@@ -12,6 +12,8 @@ const props = defineProps({
   autoresize: { type: Boolean, default: true }
 })
 
+const emit = defineEmits(['chart-click'])
+
 const chartRef = ref(null)
 let chart = null
 let resizeObserver = null
@@ -20,6 +22,9 @@ const renderChart = () => {
   if (!chartRef.value) return
   if (!chart) {
     chart = echarts.init(chartRef.value, props.theme)
+    chart.on('click', (params) => {
+      emit('chart-click', params)
+    })
   }
   chart.setOption(props.option, true)
 }

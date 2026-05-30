@@ -86,8 +86,8 @@ const projects = [
     shortName: '空间',
     name: '空间分布大屏',
     kicker: 'Spatial Distribution',
-    sectionTitle: '我们从一张地图开始，重新点亮古建筑的位置',
-    description: '从一张中国地图开始。',
+    sectionTitle: '我们从一列山脉开始，重新感受古建筑所在的山河气韵',
+    description: '从层叠起伏的山脉开始。',
     story: [
       '当古建筑被重新放回山河之间，你会看到，它们像星点一样在大地上亮起。有的靠近古城，有的隐入群山，有的沿着河流生长，有的留在村落深处。',
       '这些点位并不只是坐标。它们是文明停留过的地方，是时间在大地上留下的印记。',

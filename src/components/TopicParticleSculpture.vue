@@ -5,7 +5,6 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import * as THREE from 'three'
-import chinaMapData from '../apps/spatial/assets/china.json'
 
 const props = defineProps({
   scene: { type: String, required: true },
@@ -262,6 +261,101 @@ function addDisc(group, x, y, z, radius, axis = 'z', options = {}) {
   })
 }
 
+function createCurvedSheetGeometry(width, height, curve = 0.16, segmentsX = 36, segmentsY = 14) {
+  const vertices = []
+  const indices = []
+
+  for (let yIndex = 0; yIndex <= segmentsY; yIndex++) {
+    const v = yIndex / segmentsY
+    for (let xIndex = 0; xIndex <= segmentsX; xIndex++) {
+      const u = xIndex / segmentsX
+      const x = (u - 0.5) * width
+      const y = (v - 0.5) * height
+      const arch = Math.sin(u * Math.PI) * curve
+      const edgeCurl = (Math.pow(Math.abs(u - 0.5) * 2, 2) - 0.18) * curve * 0.32
+      vertices.push(x, y, arch + edgeCurl)
+    }
+  }
+
+  const row = segmentsX + 1
+  for (let yIndex = 0; yIndex < segmentsY; yIndex++) {
+    for (let xIndex = 0; xIndex < segmentsX; xIndex++) {
+      const a = yIndex * row + xIndex
+      const b = a + 1
+      const c = a + row
+      const d = c + 1
+      indices.push(a, c, b, b, c, d)
+    }
+  }
+
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3))
+  geometry.setIndex(indices)
+  geometry.computeVertexNormals()
+  return geometry
+}
+
+function createMapPatchGeometry(points, depth = 0.035) {
+  const shape = new THREE.Shape(points.map(([x, y], index) => (index === 0 ? new THREE.Vector2(x, y) : new THREE.Vector2(x, y))))
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth,
+    bevelEnabled: false,
+    curveSegments: 2,
+  })
+  geometry.translate(0, 0, -depth / 2)
+  geometry.computeVertexNormals()
+  return geometry
+}
+
+function addMapPatch(group, points, options = {}) {
+  return addMesh(group, createMapPatchGeometry(points, options.depth ?? 0.035), options)
+}
+
+function mountainHeight(x, z, peaks) {
+  let height = -0.72
+  peaks.forEach((peak) => {
+    const dx = (x - peak.x) / peak.wx
+    const dz = (z - peak.z) / peak.wz
+    height += peak.h * Math.exp(-(dx * dx + dz * dz))
+  })
+  height += Math.sin(x * 5.8 + z * 3.4) * 0.035
+  height += Math.sin(x * 2.2 - z * 4.8) * 0.026
+  return height
+}
+
+function createMountainRangeGeometry(width, depth, segmentsX, segmentsZ, peaks) {
+  const vertices = []
+  const indices = []
+
+  for (let zIndex = 0; zIndex <= segmentsZ; zIndex++) {
+    const vz = zIndex / segmentsZ
+    const z = (vz - 0.5) * depth
+    for (let xIndex = 0; xIndex <= segmentsX; xIndex++) {
+      const ux = xIndex / segmentsX
+      const x = (ux - 0.5) * width
+      const y = mountainHeight(x, z, peaks)
+      vertices.push(x, y, z)
+    }
+  }
+
+  const row = segmentsX + 1
+  for (let zIndex = 0; zIndex < segmentsZ; zIndex++) {
+    for (let xIndex = 0; xIndex < segmentsX; xIndex++) {
+      const a = zIndex * row + xIndex
+      const b = a + 1
+      const c = a + row
+      const d = c + 1
+      indices.push(a, c, b, b, c, d)
+    }
+  }
+
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3))
+  geometry.setIndex(indices)
+  geometry.computeVertexNormals()
+  return geometry
+}
+
 function createRoofGeometry(width, height, depth) {
   const w = width / 2
   const h = height / 2
@@ -439,136 +533,318 @@ function sampleSurface(triangles, totalArea, pointCount, palette) {
   return geometry
 }
 
-function decodeMapCoordinate(encodedCoordinate, encodeOffset) {
-  const result = []
-  let previousX = encodeOffset[0]
-  let previousY = encodeOffset[1]
-  for (let i = 0; i < encodedCoordinate.length; i += 2) {
-    let x = encodedCoordinate.charCodeAt(i) - 64
-    let y = encodedCoordinate.charCodeAt(i + 1) - 64
-    x = (x >> 1) ^ -(x & 1)
-    y = (y >> 1) ^ -(y & 1)
-    x += previousX
-    y += previousY
-    previousX = x
-    previousY = y
-    result.push([x / 1024, y / 1024])
-  }
-  return result
-}
-
-function getMapRings() {
-  const rings = []
-  chinaMapData.features.forEach((feature) => {
-    const geometry = feature.geometry
-    if (geometry.type === 'Polygon') {
-      geometry.coordinates.forEach((coordinate, index) => rings.push(decodeMapCoordinate(coordinate, geometry.encodeOffsets[index])))
-    } else {
-      geometry.coordinates.forEach((polygon, polygonIndex) => {
-        polygon.forEach((coordinate, ringIndex) => rings.push(decodeMapCoordinate(coordinate, geometry.encodeOffsets[polygonIndex][ringIndex])))
-      })
-    }
-  })
-  return rings.filter((ring) => ring.length > 3)
-}
-
-function boundsOf(points) {
-  return points.reduce(
-    (bounds, point) => ({
-      minX: Math.min(bounds.minX, point[0]),
-      maxX: Math.max(bounds.maxX, point[0]),
-      minY: Math.min(bounds.minY, point[1]),
-      maxY: Math.max(bounds.maxY, point[1]),
-    }),
-    { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity },
-  )
-}
-
-function ringArea(ring) {
-  let area = 0
-  for (let i = 0; i < ring.length; i++) {
-    const point = ring[i]
-    const next = ring[(i + 1) % ring.length]
-    area += point[0] * next[1] - next[0] * point[1]
-  }
-  return Math.abs(area) / 2
-}
-
-function isPointInRing(x, y, ring) {
-  let inside = false
-  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    const point = ring[i]
-    const previousPoint = ring[j]
-    const intersects =
-      point[1] > y !== previousPoint[1] > y &&
-      x < ((previousPoint[0] - point[0]) * (y - point[1])) / (previousPoint[1] - point[1]) + point[0]
-    if (intersects) inside = !inside
-  }
-  return inside
-}
-
-function buildChinaMapGroup() {
+function buildChinaLandscapeGroup() {
   const group = new THREE.Group()
-  const rings = getMapRings()
-    .map((ring) => ({ ring, bounds: boundsOf(ring), area: ringArea(ring) }))
-    .sort((a, b) => b.area - a.area)
-  const allPoints = rings.flatMap((item) => item.ring)
-  const bounds = boundsOf(allPoints)
-  const project = (lon, lat, z = 0) => ({
-    x: ((lon - bounds.minX) / (bounds.maxX - bounds.minX) - 0.5) * 4.55,
-    y: ((lat - bounds.minY) / (bounds.maxY - bounds.minY) - 0.5) * 3.38,
-    z,
-  })
-  rings.slice(0, 80).forEach((item) => {
-    if (item.area < 0.16) return
-    const step = Math.max(1, Math.ceil(item.ring.length / 240))
-    const shapePoints = item.ring
-      .filter((_, index) => index % step === 0)
-      .map(([lon, lat]) => {
-        const p = project(lon, lat)
-        return new THREE.Vector2(p.x, p.y)
-      })
-    if (shapePoints.length < 3) return
 
-    try {
-      const shape = new THREE.Shape(shapePoints)
-      const geometry = new THREE.ExtrudeGeometry(shape, {
-        depth: 0.22,
-        bevelEnabled: false,
-        curveSegments: 1,
-      })
-      geometry.translate(0, 0, -0.11)
-      addMesh(group, geometry, {
-        tone: undefined,
-        glow: item.area > 40 ? 0.16 : 0.2,
-        size: item.area > 40 ? 0.88 : 0.74,
-        density: item.area > 40 ? 1 : 0.7,
-      })
-    } catch {
-      // A few tiny islands can have self-crossing paths in the map data; skipping them keeps the sculpture stable.
+  const peaks = [
+    { x: -1.42, z: -0.08, h: 0.72, wx: 0.46, wz: 0.42 },
+    { x: -0.58, z: 0.06, h: 1.1, wx: 0.54, wz: 0.48 },
+    { x: 0.14, z: -0.04, h: 1.62, wx: 0.5, wz: 0.5 },
+    { x: 0.82, z: 0.08, h: 0.96, wx: 0.52, wz: 0.46 },
+    { x: 1.5, z: -0.08, h: 0.68, wx: 0.44, wz: 0.4 },
+  ]
+
+  addMesh(group, createMountainRangeGeometry(4.18, 1.42, 76, 28, peaks), {
+    tone: undefined,
+    glow: 0.22,
+    size: 0.76,
+    density: 1.42,
+  })
+
+  const ridge = []
+  for (let i = 0; i < 28; i++) {
+    const t = i / 27
+    const x = -1.98 + t * 3.96
+    const z = Math.sin(t * Math.PI * 2.3) * 0.07
+    ridge.push([x, mountainHeight(x, z, peaks) + 0.045, z + 0.05])
+  }
+  addTube(group, ridge, 0.018, { tone: 'warm', glow: 0.48, size: 0.62, density: 9 })
+
+  peaks.forEach((peak, index) => {
+    const topY = mountainHeight(peak.x, peak.z, peaks)
+    const snowWidth = 0.34 + peak.h * 0.08
+    addRoof(group, peak.x, topY + 0.035, peak.z + 0.08, snowWidth, 0.18 + peak.h * 0.07, 0.09, {
+      tone: 'light',
+      glow: 0.46,
+      size: 0.44,
+      density: 4.2,
+    })
+    addTube(
+      group,
+      [
+        [peak.x - snowWidth * 0.55, topY - 0.08, peak.z + 0.1],
+        [peak.x - snowWidth * 0.12, topY - 0.2, peak.z + 0.14],
+        [peak.x + snowWidth * 0.4, topY - 0.14, peak.z + 0.11],
+      ],
+      0.0055,
+      { tone: index % 2 ? 'light' : 'warm', glow: 0.32, size: 0.34, density: 6.5 },
+    )
+  })
+
+  ;[-0.38, 0, 0.34].forEach((zOffset, lineIndex) => {
+    const line = []
+    for (let i = 0; i < 18; i++) {
+      const t = i / 17
+      const x = -1.88 + t * 3.76
+      const z = zOffset + Math.sin(t * Math.PI * 2 + lineIndex) * 0.035
+      line.push([x, mountainHeight(x, z, peaks) - 0.11 - lineIndex * 0.045, z])
     }
-  })
-
-  rings.forEach((item) => {
-    if (item.area < 0.16) return
-    const step = Math.max(1, Math.ceil(item.ring.length / (item.area > 30 ? 260 : 120)))
-    const boundary = item.ring
-      .filter((_, index) => index % step === 0)
-      .map(([lon, lat]) => {
-        const p = project(lon, lat, 0.15)
-        return [p.x, p.y, p.z]
-      })
-    if (boundary.length < 3) return
-    boundary.push(boundary[0])
-    addTube(group, boundary, item.area > 30 ? 0.0065 : 0.0045, {
-      tone: item.area > 30 ? undefined : 'dark',
-      glow: item.area > 30 ? 0.34 : 0.18,
-      size: item.area > 30 ? 0.62 : 0.48,
-      density: item.area > 30 ? 6 : 4.4,
+    addTube(group, line, 0.006, {
+      tone: lineIndex === 1 ? 'warm' : 'dark',
+      glow: 0.2,
+      size: 0.38,
+      density: 6.2,
     })
   })
 
-  return { group, rotation: [0, 0, 0], viewSize: 3.62, haloRadius: 1.78 }
+  ;[0.72, 0.48, -0.48].forEach((y, lineIndex) => {
+    const mist = []
+    for (let i = 0; i < 20; i++) {
+      const t = i / 19
+      mist.push([-2 + t * 4, y + Math.sin(t * Math.PI * 2.2 + lineIndex) * 0.045, -0.54 + lineIndex * 0.08])
+    }
+    addTube(group, mist, 0.0045, {
+      tone: 'light',
+      glow: 0.16,
+      size: 0.32,
+      density: 5.2,
+    })
+  })
+
+  ;[-1.72, -1.24, -0.82, -0.28, 0.32, 0.86, 1.38, 1.78].forEach((x, index) => {
+    const z = -0.62 + (index % 3) * 0.08
+    addTube(
+      group,
+      [
+        [x, -0.76, z],
+        [x + 0.18, -0.86 + Math.sin(index) * 0.035, z + 0.06],
+      ],
+      0.004,
+      {
+        tone: 'ink',
+        glow: 0.14,
+        size: 0.28,
+        density: 5,
+      },
+    )
+  })
+
+  return { group, rotation: [0.32, -0.42, 0.02], viewSize: 3.55, haloRadius: 1.52 }
+}
+
+function buildAtlasScrollGroup() {
+  const group = new THREE.Group()
+
+  addMesh(group, createCurvedSheetGeometry(3.9, 1.62, 0.14, 48, 18), {
+    tone: 'light',
+    glow: 0.26,
+    size: 0.8,
+    density: 1.28,
+    x: 0,
+    y: 0.02,
+    z: -0.03,
+  })
+  addMesh(group, createCurvedSheetGeometry(3.58, 1.28, 0.1, 42, 14), {
+    tone: undefined,
+    glow: 0.16,
+    size: 0.64,
+    density: 0.72,
+    x: 0.06,
+    y: -0.04,
+    z: -0.11,
+  })
+
+  ;[-1.98, 1.98].forEach((x, index) => {
+    addCylinder(group, x, 0.02, 0.06, 0.18, 1.92, 'y', { tone: 'warm', glow: 0.24, size: 0.86, density: 1.9 })
+    addCylinder(group, x + (index === 0 ? -0.14 : 0.14), 0.02, 0.06, 0.065, 2.04, 'y', {
+      tone: 'dark',
+      glow: 0.14,
+      size: 0.58,
+      density: 2.4,
+    })
+    ;[-1.02, 1.02].forEach((y) => {
+      addSphere(group, x, y, 0.06, 0.09, { tone: 'light', glow: 0.36, size: 0.72, density: 4 })
+    })
+  })
+
+  for (let i = 0; i < 5; i++) {
+    const y = -0.72 + i * 0.36
+    addTube(
+      group,
+      [
+        [-1.58, y + Math.sin(i) * 0.015, 0.17],
+        [-0.76, y + 0.025, 0.2],
+        [0.1, y - 0.015, 0.21],
+        [1.5, y + Math.cos(i) * 0.015, 0.18],
+      ],
+      0.0055,
+      { tone: i % 2 ? 'dark' : 'ink', glow: 0.16, size: 0.46, density: 8 },
+    )
+  }
+
+  for (let i = 0; i < 8; i++) {
+    const x = -1.54 + i * 0.44
+    addTube(group, [[x, -0.72, 0.205], [x + Math.sin(i * 0.7) * 0.05, 0.7, 0.205]], 0.0038, {
+      tone: 'ink',
+      glow: 0.08,
+      size: 0.28,
+      density: 5,
+    })
+  }
+
+  const mapPatches = [
+    {
+      tone: undefined,
+      points: [
+        [-1.44, 0.42],
+        [-1.2, 0.62],
+        [-0.84, 0.58],
+        [-0.62, 0.34],
+        [-0.78, 0.12],
+        [-1.18, 0.1],
+        [-1.54, 0.26],
+      ],
+    },
+    {
+      tone: 'warm',
+      points: [
+        [-0.42, 0.52],
+        [-0.1, 0.64],
+        [0.24, 0.48],
+        [0.34, 0.2],
+        [0.08, 0.02],
+        [-0.34, 0.12],
+        [-0.58, 0.32],
+      ],
+    },
+    {
+      tone: undefined,
+      points: [
+        [0.72, 0.38],
+        [1.05, 0.58],
+        [1.36, 0.5],
+        [1.5, 0.18],
+        [1.24, -0.02],
+        [0.88, 0.04],
+        [0.62, 0.22],
+      ],
+    },
+    {
+      tone: 'warm',
+      points: [
+        [-1.02, -0.34],
+        [-0.72, -0.14],
+        [-0.38, -0.26],
+        [-0.28, -0.56],
+        [-0.58, -0.72],
+        [-0.96, -0.62],
+        [-1.2, -0.48],
+      ],
+    },
+    {
+      tone: undefined,
+      points: [
+        [0.36, -0.28],
+        [0.82, -0.12],
+        [1.2, -0.28],
+        [1.34, -0.58],
+        [0.98, -0.72],
+        [0.52, -0.66],
+        [0.24, -0.48],
+      ],
+    },
+  ]
+
+  mapPatches.forEach((patch, index) => {
+    addMapPatch(group, patch.points, {
+      tone: patch.tone,
+      glow: index % 2 ? 0.2 : 0.24,
+      size: 0.56,
+      density: 1.2,
+      z: 0.245,
+      depth: 0.032,
+    })
+    const closed = patch.points.map(([x, y]) => [x, y, 0.285])
+    closed.push(closed[0])
+    addTube(group, closed, 0.006, {
+      tone: 'dark',
+      glow: 0.24,
+      size: 0.42,
+      density: 7,
+    })
+
+    for (let i = 0; i < 2; i++) {
+      const inset = patch.points.map(([x, y]) => [x * (0.94 - i * 0.08), y * (0.9 - i * 0.07), 0.31 + i * 0.01])
+      inset.push(inset[0])
+      addTube(group, inset, 0.0038, {
+        tone: i % 2 ? 'warm' : 'ink',
+        glow: 0.18,
+        size: 0.3,
+        density: 6,
+      })
+    }
+  })
+
+  ;[
+    [-1.18, 0.38],
+    [-0.2, 0.34],
+    [0.98, 0.28],
+    [-0.74, -0.42],
+    [0.86, -0.5],
+  ].forEach((point, index) => {
+    addSphere(group, point[0], point[1], 0.36, 0.045 + (index % 2) * 0.008, {
+      tone: index % 2 ? 'warm' : 'light',
+      glow: 0.58,
+      size: 0.9,
+      density: 7,
+    })
+    addMesh(group, new THREE.TorusGeometry(0.08, 0.005, 8, 42), {
+      tone: 'river',
+      glow: 0.4,
+      size: 0.42,
+      density: 4.5,
+      x: point[0],
+      y: point[1],
+      z: 0.355,
+      rx: Math.PI / 2,
+    })
+  })
+
+  const ribbon = []
+  for (let i = 0; i < 18; i++) {
+    const t = i / 17
+    ribbon.push([-1.52 + t * 3.04, -0.05 + Math.sin(t * Math.PI * 2.8) * 0.18, 0.34])
+  }
+  addTube(group, ribbon, 0.012, { tone: 'river', glow: 0.42, size: 0.52, density: 7 })
+  ;[0.1, 0.34, 0.58, 0.82].forEach((t, index) => {
+    const point = ribbon[Math.round(t * (ribbon.length - 1))]
+    addSphere(group, point[0], point[1], point[2] + 0.015, 0.045 + index * 0.004, {
+      tone: index % 2 ? 'warm' : 'light',
+      glow: 0.54,
+      size: 0.82,
+      density: 7,
+    })
+  })
+
+  addDisc(group, 1.38, -0.6, 0.35, 0.18, 'z', { tone: 'alert', glow: 0.58, size: 0.72, density: 5 })
+  addTube(group, [[1.24, -0.62, 0.38], [1.5, -0.58, 0.38]], 0.0045, { tone: 'light', glow: 0.32, size: 0.36, density: 8 })
+  addTube(group, [[1.3, -0.72, 0.38], [1.46, -0.48, 0.38]], 0.0045, { tone: 'light', glow: 0.32, size: 0.36, density: 8 })
+
+  ;[-1.62, 1.62].forEach((x) => {
+    addMesh(group, new THREE.TorusGeometry(0.2, 0.012, 8, 48, Math.PI * 1.35), {
+      tone: 'warm',
+      glow: 0.34,
+      size: 0.48,
+      density: 4,
+      x,
+      y: 0.72,
+      z: 0.25,
+      rx: Math.PI / 2,
+      rz: x < 0 ? Math.PI * 0.18 : Math.PI * 1.18,
+    })
+  })
+
+  return { group, rotation: [0.18, -0.32, 0.02], viewSize: 4.28, haloRadius: 1.86 }
 }
 
 function buildScrollGroup() {
@@ -826,7 +1102,7 @@ async function createSculptureGeometry(sceneName) {
 
   try {
     const builders = {
-      spatial: buildChinaMapGroup,
+      spatial: buildChinaLandscapeGroup,
       history: buildScrollGroup,
       structure: buildPalaceGroup,
       materials: buildMortiseGroup,

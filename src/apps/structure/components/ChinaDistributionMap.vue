@@ -61,6 +61,11 @@
         <span>{{ activeSample.type }} / {{ activeSample.roofForm }}</span>
         <span :class="{ estimated: isEstimated(activeSample.height) }">高度 {{ formatMeasure(activeSample.height, 'm') }}</span>
       </div>
+
+      <div class="map-watermark" aria-hidden="true">
+        <span>审图号：GS (2024) 0650 号</span>
+        <span>地图来源：国家地理信息公共服务平台「天地图」发布的官方 GeoJSON 数据</span>
+      </div>
     </div>
   </div>
 </template>
@@ -429,5 +434,22 @@ svg {
 .sample-tooltip .estimated {
   color: #c9433b;
   font-weight: 900;
+}
+
+.map-watermark {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  max-width: min(76%, 460px);
+  color: rgba(49, 79, 79, 0.42);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.45;
+  text-align: right;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.86);
+  pointer-events: none;
 }
 </style>

@@ -11,6 +11,27 @@ import chinaJson from '../china.json'
 // 注册真实的中国地图
 echarts.registerMap('china', chinaJson)
 
+const MAP_WATERMARK_TEXT = '审图号：GS (2024) 0650 号\n地图来源：国家地理信息公共服务平台「天地图」发布的官方 GeoJSON 数据'
+
+const createMapWatermark = () => ({
+  type: 'text',
+  right: 12,
+  bottom: 10,
+  silent: true,
+  z: 100,
+  style: {
+    text: MAP_WATERMARK_TEXT,
+    fill: 'rgba(62, 94, 93, 0.42)',
+    fontSize: 10,
+    fontWeight: 500,
+    lineHeight: 15,
+    align: 'right',
+    textAlign: 'right',
+    textShadowColor: 'rgba(255, 255, 255, 0.82)',
+    textShadowBlur: 2
+  }
+})
+
 const geoCoordMap = {
   黑龙江: [125, 46],
   吉林: [124, 43],
@@ -162,7 +183,8 @@ const option = computed(() => ({
         fill: 'rgba(62,94,93,0.7)',
         fontSize: 11
       }
-    }
+    },
+    createMapWatermark()
   ],
   series: [
     {

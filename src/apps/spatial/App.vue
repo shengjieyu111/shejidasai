@@ -39,6 +39,27 @@ import * as echarts from 'echarts';
 import chinaMapData from './assets/china.json';
 import * as XLSX from 'xlsx'; // 需要安装: npm install xlsx
 
+const MAP_WATERMARK_TEXT = '审图号：GS (2024) 0650 号\n地图来源：国家地理信息公共服务平台「天地图」发布的官方 GeoJSON 数据';
+
+const createMapWatermark = () => ({
+  type: 'text',
+  right: 14,
+  bottom: 10,
+  silent: true,
+  z: 100,
+  style: {
+    text: MAP_WATERMARK_TEXT,
+    fill: 'rgba(44, 62, 78, 0.42)',
+    fontSize: 10,
+    fontWeight: 500,
+    lineHeight: 15,
+    align: 'right',
+    textAlign: 'right',
+    textShadowColor: 'rgba(255, 255, 255, 0.8)',
+    textShadowBlur: 2
+  }
+});
+
 // 省份名称映射：用于匹配GeoJSON文件
 // 省份简称 -> 英文文件名（小写）
 const provinceToFile = {
@@ -186,6 +207,7 @@ async loadHeritageData() {
     getChinaMapOption() {
       return {
         title: { text: '中国文物保护单位分布地图', left: 'center', textStyle: { color: '#2c3e4e' } },
+        graphic: [createMapWatermark()],
         tooltip: { trigger: 'item', formatter: '{b}: {c} 处' },
         visualMap: {
           min: 0, max: 400, text: ['高', '低'], realtime: false, calculable: true,
@@ -246,6 +268,7 @@ async showProvinceMap(provinceName) {
   
   const option = {
     title: { text: `${provinceName}省文物保护单位分布`, left: 'center', textStyle: { color: '#2c3e4e' } },
+    graphic: [createMapWatermark()],
     tooltip: { trigger: 'item', formatter: (params) => {
       if (params.seriesType === 'scatter') {
         return `${params.name}<br/>经度: ${params.value[0].toFixed(4)}<br/>纬度: ${params.value[1].toFixed(4)}`;

@@ -223,6 +223,26 @@ import * as echarts from 'echarts'
 import chinaMapText from '../assets/中国_省.geojson?raw'
 
 const chinaMap = JSON.parse(chinaMapText)
+const MAP_WATERMARK_TEXT = '审图号：GS (2024) 0650 号\n地图来源：国家地理信息公共服务平台「天地图」发布的官方 GeoJSON 数据'
+
+const createMapWatermark = () => ({
+  type: 'text',
+  right: 16,
+  bottom: 12,
+  silent: true,
+  z: 100,
+  style: {
+    text: MAP_WATERMARK_TEXT,
+    fill: 'rgba(49, 79, 79, 0.42)',
+    fontSize: 10,
+    fontWeight: 500,
+    lineHeight: 15,
+    align: 'right',
+    textAlign: 'right',
+    textShadowColor: 'rgba(255, 255, 255, 0.86)',
+    textShadowBlur: 2
+  }
+})
 const buildingImages = {
   '蓟城桥梁.png': new URL('../assets/buildings/蓟城桥梁.png', import.meta.url).href,
   '居庸关云台.png': new URL('../assets/buildings/居庸关云台.png', import.meta.url).href,
@@ -1296,6 +1316,7 @@ function renderMap() {
         `
       }
     },
+    graphic: [createMapWatermark()],
     visualMap: {
       min: 0,
       max: maxValue,

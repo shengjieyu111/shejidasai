@@ -52,6 +52,8 @@ const pointTargets = {
   protection: 90000,
 }
 
+const AUTO_ROTATE_SPEED = 0.0012
+
 let buildVersion = 0
 
 function getColor(hex) {
@@ -969,6 +971,12 @@ function animate() {
   const interaction = pointerTarget.length() > 0.002 ? 1 : 0
 
   if (sculpture) {
+    if (props.active && props.scene !== 'spatial' && !isDragging) {
+      const hoverBlend = interaction ? 0.35 : 1
+      rotationTarget.y += AUTO_ROTATE_SPEED * hoverBlend
+      rotationTarget.z += AUTO_ROTATE_SPEED * 0.08 * hoverBlend
+    }
+
     rotationCurrent.lerp(rotationTarget, 0.12)
     sculpture.rotation.set(rotationCurrent.x, rotationCurrent.y, rotationCurrent.z)
     sculpture.material.uniforms.uTime.value = elapsed * 1.5

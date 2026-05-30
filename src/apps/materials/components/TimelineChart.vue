@@ -7,11 +7,11 @@ import { computed } from 'vue'
 import * as echarts from 'echarts'
 import BaseChart from './BaseChart.vue'
 
-const years = ['明代', '清代', '民国', '近现代修缮']
-const values = [48, 86, 32, 55]
+const years = ['检测建档', '材料试验', '现场修复', '养护固化', '复检回访']
+const values = [64, 82, 118, 76, 58]
 
 const option = computed(() => ({
-  grid: { left: 30, right: 24, top: 15, bottom: 10, containLabel: true },
+  grid: { left: 30, right: 24, top: 25, bottom: 8, containLabel: true },
   tooltip: {
     trigger: 'axis',
     backgroundColor: 'rgba(255,255,255,0.94)',
@@ -28,7 +28,7 @@ const option = computed(() => ({
   yAxis: {
     type: 'value',
     splitLine: { lineStyle: { color: 'rgba(98,138,138,0.12)' } },
-    axisLabel: { color: '#628A8A' },
+    axisLabel: { color: '#628A8A', fontSize: 9 },
     axisLine: { show: false }
   },
   series: [
@@ -37,7 +37,7 @@ const option = computed(() => ({
       smooth: true,
       data: values,
       symbol: 'circle',
-      symbolSize: 10,
+      symbolSize: 6,
       lineStyle: { width: 3, color: '#628A8A' },
       itemStyle: { color: '#7CB7A8', borderColor: '#fff', borderWidth: 2 },
       areaStyle: {

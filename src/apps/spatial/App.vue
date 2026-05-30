@@ -1,5 +1,7 @@
 <template>
   <div class="dashboard-container">
+    <a class="portal-return-link" href="./index.html#topic-spatial" aria-label="返回空间专题" title="返回空间专题"></a>
+
     <!-- 顶部标题栏 -->
     <div class="header">
       <h1>中国古建筑空间分布数据大屏</h1>
@@ -324,14 +326,14 @@ async showProvinceMap(provinceName) {
         xAxis: { type: 'value', boundaryGap: [0, 0.01] },
         yAxis: {
           type: 'category',
-          data: ['山西', '河南', '河北', '陕西', '浙江', '山东', '四川', '江苏', '湖南', '福建'],
+          data: ['福建', '湖南', '江苏', '四川', '山东', '浙江', '陕西', '河北', '河南', '山西'],
           axisLabel: {
             interval: 0   // 关键：显示所有标签
           }
         },
         series: [{
           name: '古建筑数量', type: 'bar',
-          data: [399, 368, 327, 293, 257, 230, 230, 221, 192, 185],
+          data: [185, 192, 221, 230, 230, 257, 293, 327, 368, 399],
           itemStyle: { color: '#628a8a' }
         }]
       };

@@ -1,0 +1,294 @@
+.page-transition-root {
+  background: #eaf4f0;
+}
+
+.portal-return-link {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 2147482000;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  color: #f8fffd;
+  background: rgba(37, 71, 70, 0.72);
+  box-shadow: 0 8px 20px rgba(17, 61, 57, 0.18);
+  font-size: 0;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.portal-return-link::before {
+  content: "<";
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.portal-return-link:hover,
+.portal-return-link:focus-visible {
+  color: #fff;
+  background: rgba(37, 71, 70, 0.9);
+  border-color: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 10px 24px rgba(17, 61, 57, 0.28);
+  transform: translateY(-1px);
+}
+
+.page-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.page-transition__veil,
+.page-transition__grid,
+.page-transition__spark {
+  position: absolute;
+  inset: -12%;
+  transform: translateX(-112%) skewX(-8deg);
+}
+
+.page-transition__loader {
+  --progress-angle: 0deg;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  width: min(320px, calc(100vw - 44px));
+  padding: 24px 24px 22px;
+  border: 1px solid rgba(247, 239, 224, 0.24);
+  border-radius: 8px;
+  color: #f8fffd;
+  background: rgba(17, 61, 57, 0.9);
+  box-shadow: 0 18px 42px rgba(17, 61, 57, 0.26);
+  opacity: 0;
+  transform: translate(-50%, -46%) scale(0.96);
+  transition:
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.2, 0.78, 0.22, 1);
+}
+
+.page-transition__loader-kicker,
+.page-transition__loader-percent {
+  display: block;
+  color: rgba(248, 255, 253, 0.72);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.page-transition__loader-title {
+  display: block;
+  margin-top: 10px;
+  color: #fff;
+  font-size: 26px;
+  line-height: 1.15;
+  font-weight: 950;
+}
+
+.page-transition__loader-track {
+  display: block;
+  height: 6px;
+  margin-top: 18px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(237, 246, 243, 0.18);
+}
+
+.page-transition__progress-bar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(90deg, #7fb2ab 0%, #d7a856 54%, #f4efe1 100%);
+  box-shadow: 0 0 18px rgba(215, 168, 86, 0.7);
+  transition: transform 240ms cubic-bezier(0.2, 0.78, 0.22, 1);
+}
+
+.page-transition__loader-circle {
+  position: relative;
+  display: none;
+  place-items: center;
+  width: 92px;
+  aspect-ratio: 1;
+  margin: 18px auto 2px;
+  border-radius: 50%;
+  background:
+    conic-gradient(#d7a856 var(--progress-angle), rgba(237, 246, 243, 0.18) 0);
+  box-shadow: 0 0 24px rgba(215, 168, 86, 0.24);
+}
+
+.page-transition__loader-circle::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: inherit;
+  background: rgba(17, 61, 57, 0.96);
+}
+
+.page-transition__loader-circle-core {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  aspect-ratio: 1;
+  border-radius: inherit;
+  color: #fff;
+  background: rgba(37, 71, 70, 0.78);
+  font-size: 16px;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.page-transition__loader-percent {
+  margin-top: 12px;
+  text-align: right;
+}
+
+body.page-progress-return .page-transition__loader {
+  width: min(260px, calc(100vw - 44px));
+  padding: 24px 22px 24px;
+  text-align: center;
+}
+
+body.page-progress-return .page-transition__loader-track,
+body.page-progress-return .page-transition__loader-percent {
+  display: none;
+}
+
+body.page-progress-return .page-transition__loader-circle {
+  display: grid;
+}
+
+.page-transition__veil {
+  background:
+    radial-gradient(circle at 72% 34%, rgba(240, 181, 107, 0.2), transparent 24%),
+    linear-gradient(112deg, rgba(17, 61, 57, 0.96), rgba(35, 83, 79, 0.94) 54%, rgba(236, 246, 241, 0.9));
+  box-shadow: 24px 0 44px rgba(17, 61, 57, 0.18);
+}
+
+.page-transition__grid {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.16) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mix-blend-mode: screen;
+  opacity: 0.46;
+}
+
+.page-transition__spark {
+  inset: 0;
+  width: 12px;
+  height: 12px;
+  margin: auto;
+  border-radius: 50%;
+  background: rgba(247, 239, 224, 0.92);
+  box-shadow:
+    -34vw -16vh 0 rgba(247, 239, 224, 0.38),
+    -18vw 22vh 0 rgba(159, 224, 234, 0.42),
+    12vw -22vh 0 rgba(240, 181, 107, 0.34),
+    32vw 16vh 0 rgba(247, 239, 224, 0.3);
+}
+
+body.page-is-entering #app {
+  animation: pageAppEnter 620ms cubic-bezier(0.2, 0.78, 0.22, 1) both;
+}
+
+body.page-is-leaving #app {
+  opacity: 0.28;
+  transform: translateY(-6px) scale(0.99);
+  transition:
+    opacity 420ms ease,
+    transform 420ms ease;
+}
+
+body.page-is-leaving .page-transition,
+body.page-is-entering .page-transition {
+  opacity: 1;
+  visibility: visible;
+}
+
+body.page-has-topic-progress .page-transition__loader {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+body.page-is-leaving .page-transition__veil,
+body.page-is-leaving .page-transition__grid,
+body.page-is-leaving .page-transition__spark {
+  transform: translateX(0) skewX(0);
+  transition: transform 560ms cubic-bezier(0.74, 0, 0.18, 1);
+}
+
+body.page-is-entering .page-transition__veil,
+body.page-is-entering .page-transition__grid,
+body.page-is-entering .page-transition__spark {
+  animation: pageVeilLeave 680ms cubic-bezier(0.2, 0.78, 0.22, 1) both;
+}
+
+@keyframes pageAppEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pageVeilLeave {
+  from {
+    transform: translateX(0) skewX(0);
+  }
+
+  to {
+    transform: translateX(112%) skewX(-8deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition {
+    display: none;
+  }
+
+  body.page-is-entering #app,
+  body.page-is-leaving #app {
+    animation: none;
+    transition: none;
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .portal-return-link {
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+  }
+
+  .portal-return-link::before {
+    font-size: 17px;
+  }
+}

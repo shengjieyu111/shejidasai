@@ -7,9 +7,9 @@ import { computed } from 'vue'
 import * as echarts from 'echarts'
 import BaseChart from './BaseChart.vue'
 
-const categories = ['彩绘', '木雕', '砖雕', '石雕', '匾额']
-const values = [142, 126, 83, 64, 39]
 
+const categories = ['清洗', '加固', '填补', '防护', '色差校正']
+const values = [156, 138, 112, 96, 74]
 const option = computed(() => ({
   grid: { left: 30, right: 26, top: 5, bottom: 5, containLabel: true },
   xAxis: {

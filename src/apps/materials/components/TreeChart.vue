@@ -7,23 +7,23 @@ import { computed } from 'vue'
 import BaseChart from './BaseChart.vue'
 
 const treeData = {
-  name: '建筑构件',
+  name: '材料修复',
   children: [
     {
-      name: '屋顶',
-      children: [{ name: '屋脊' }, { name: '瓦件' }, { name: '琉璃饰件' }]
+      name: '材料对象',
+      children: [{ name: '木材' }, { name: '砖石' }, { name: '金属' }]
     },
     {
-      name: '梁架',
-      children: [{ name: '梁' }, { name: '枋' }, { name: '檩' }]
+     name: '病害诊断',
+      children: [{ name: '裂缝' }, { name: '腐蚀' }, { name: '风化' }]
     },
     {
-      name: '围护',
-      children: [{ name: '门窗' }, { name: '墙体' }, { name: '柱础' }]
+      name: '修复工法',
+      children: [{ name: '清洗' }, { name: '加固' }, { name: '填补' }]
     },
     {
-      name: '装饰',
-      children: [{ name: '匾额' }, { name: '雕饰' }, { name: '彩绘' }]
+      name: '监测指标',
+      children: [{ name: '强度' }, { name: '含水率' }, { name: '色差' }]
     }
   ]
 }

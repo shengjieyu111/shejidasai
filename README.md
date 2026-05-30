@@ -1,16 +1,28 @@
 # SinoCraft Vis
 
-> 华构工韵 -- 古建筑材料与工艺数据可视化系统
+> 华构工韵：中国古建筑数字可视化系统
 
-SinoCraft Vis 是一个基于 Vue 3、Vite 和 ECharts 构建的中国古建筑可视化大屏。项目围绕唐、宋、元、明、清五个历史阶段，整合古建筑数量、空间分布、建筑类型、保存状态、修缮情况和代表性建筑图文资料，用交互式图表呈现古建筑材料与营造工艺的时空演变。
+SinoCraft Vis 是一个基于 Vue 3、Vite、ECharts、Three.js 和 Electron 构建的中国古建筑可视化项目。项目以首页粒子门户作为统一入口，串联空间分布、历史演化、形制结构、材料工艺、保护风险五个专题大屏，用地图、图表、表格、关系图和交互式粒子场景展示中国古建筑的空间分布、历史脉络、结构形制、营造材料与保护状态。
 
-## 项目亮点
+## 当前功能
 
-- 历史时间轴：支持唐、宋、元、明、清与全部数据切换，并带有自动轮播播放控制。
-- 中国地图分布：基于地图 GeoJSON 展示各省古建筑数量分布，支持点击省份联动建筑详情。
-- 多维图表分析：包含风格演变趋势、建筑类型占比、保存状态、修缮次数、朝代-类型热力图、省份 TOP 排名变化等视图。
-- 建筑图文档案：内置故宫、天坛、应县木塔、大雁塔、拙政园、龙门石窟奉先寺等代表性建筑图片和简介。
-- 大屏交互体验：图表可放大预览，省份建筑列表支持详情弹窗，中心地图详情区域支持拖拽调整高度。
+- 首页门户：`HomePage.vue` 使用 Three.js 将古建筑模型采样为粒子形态，支持滚轮进入专题粒子导航区。
+- 专题导航：五个专题以横向粒子卡片呈现，支持鼠标滚轮横向切换、底部圆点切换和点击进入专题。
+- 专题返回：每个专题页都有返回入口，返回后会定位到对应的首页粒子卡片，例如 `index.html#topic-structure`。
+- 页面转场：内部专题跳转统一使用过渡遮罩；从首页进入专题时显示居中加载面板、专题名称和进度百分比。
+- 多大屏展示：空间分布、历史演化、形制结构、材料工艺、保护风险分别作为独立 Vite HTML 入口构建。
+- 桌面端支持：项目已配置 Electron 和 electron-builder，可打包为 Windows 桌面应用。
+
+## 专题页面
+
+| 专题 | 入口文件 | Vue 入口 | 说明 |
+| --- | --- | --- | --- |
+| 首页门户 | `index.html` | `src/main.js` / `src/HomePage.vue` | 粒子模型首页与五个专题导航 |
+| 空间分布大屏 | `spatial.html` | `src/apps/spatial/main.js` | 全国与省级地图、文保单位空间分布、统计图表 |
+| 历史演化大屏 | `history.html` | `src/apps/history/main.js` | 朝代切换、地图分布、建筑类型与代表建筑图文 |
+| 形制结构大屏 | `structure.html` | `src/apps/structure/main.js` | 建筑样本筛选、结构维度、地图点位、数据表格 |
+| 材料工艺大屏 | `materials.html` | `src/apps/materials/main.js` | 材料来源地图、修复流程、材料病害与工艺图表 |
+| 保护风险大屏 | `protection.html` | `src/apps/protection/main.js` | 保护现状、风险预警、数字化进度、投入与病害分析 |
 
 ## 技术栈
 
@@ -18,16 +30,20 @@ SinoCraft Vis 是一个基于 Vue 3、Vite 和 ECharts 构建的中国古建筑�
 | --- | --- |
 | 前端框架 | Vue 3 |
 | 构建工具 | Vite |
-| 数据可视化 | Apache ECharts |
-| 地图数据 | 中国地图 GeoJSON / JSON |
-| 样式 | CSS / Vue SFC scoped style |
+| 可视化 | Apache ECharts、echarts-wordcloud |
+| 3D / 粒子 | Three.js |
+| 表格数据解析 | xlsx |
+| 桌面端 | Electron、electron-builder |
+| 样式 | CSS、Vue SFC scoped style |
 
 ## 环境要求
 
-项目当前使用 Vite 8，建议使用以下 Node.js 版本：
+建议使用：
 
-- Node.js `^20.19.0` 或 `>=22.12.0`
-- npm 10+，或与当前 Node.js 版本匹配的 npm
+- Node.js 18.18+ 或 Node.js 20+
+- npm 9+
+
+依赖版本以 `package.json` 和 `package-lock.json` 为准。
 
 ## 快速开始
 
@@ -35,107 +51,201 @@ SinoCraft Vis 是一个基于 Vue 3、Vite 和 ECharts 构建的中国古建筑�
 # 安装依赖
 npm install
 
-# 启动开发环境
+# 启动开发服务
 npm run dev
 
 # 生产构建
 npm run build
 
-# 本地预览构建产物
+# 预览构建产物
 npm run preview
 ```
 
-开发服务启动后，按终端提示访问本地地址，通常为：
+开发服务启动后，根据终端提示访问本地地址，通常是：
 
 ```text
 http://localhost:5173/
 ```
 
+## 桌面端运行与打包
+
+```bash
+# 直接启动 Electron
+npm run start
+
+# 构建 Web 产物后用 Electron 预览
+npm run electron:preview
+
+# 生成未安装版目录
+npm run pack
+
+# 生成 Windows 安装包 / 便携包
+npm run dist
+```
+
+打包输出目录为：
+
+```text
+release/
+```
+
+已打包的 Windows 未安装版通常位于：
+
+```text
+release/win-unpacked/SinoCraft Vis.exe
+```
+
+运行桌面版时不要只复制单个 `.exe`，需要保留整个 `win-unpacked` 目录结构，包括 `resources/`、`locales/`、`.dll`、`.pak` 等文件。
+
 ## 项目结构
 
 ```text
 SinoCraft Vis/
-├── public/                 # 公共静态资源
-├── src/
-│   ├── assets/
-│   │   ├── buildings/      # 古建筑图片资源
-│   │   ├── china.geojson   # 中国地图数据
-│   │   ├── hero.png        # 页面资源图
-│   │   └── map.json        # ECharts 地图数据
-│   ├── components/
-│   │   └── HistoryChart.vue # 可视化大屏核心组件
-│   ├── App.vue             # 应用入口组件
-│   ├── main.js             # Vue 挂载入口
-│   └── style.css           # 全局样式
-├── index.html              # Vite HTML 入口
-├── package.json            # 依赖与脚本
-├── vite.config.js          # Vite 配置
-└── README.md
+├─ index.html                 # 首页门户入口
+├─ spatial.html               # 空间分布大屏入口
+├─ history.html               # 历史演化大屏入口
+├─ structure.html             # 形制结构大屏入口
+├─ materials.html             # 材料工艺大屏入口
+├─ protection.html            # 保护风险大屏入口
+├─ vite.config.js             # 多页面构建配置
+├─ package.json               # 脚本、依赖和 Electron 打包配置
+├─ electron/                  # Electron 主进程配置
+├─ public/                    # 静态资源
+└─ src/
+   ├─ main.js                 # 首页 Vue 挂载入口
+   ├─ App.vue                 # 首页根组件
+   ├─ HomePage.vue            # 首页粒子门户和专题导航
+   ├─ pageTransition.js       # 页面转场、专题加载面板逻辑
+   ├─ pageTransition.css      # 页面转场和返回按钮全局样式
+   ├─ portal.css              # 首页基础样式
+   ├─ components/
+   │  └─ TopicParticleSculpture.vue
+   └─ apps/
+      ├─ spatial/             # 空间分布大屏
+      ├─ history/             # 历史演化大屏
+      ├─ structure/           # 形制结构大屏
+      ├─ materials/           # 材料工艺大屏
+      └─ protection/          # 保护风险大屏
 ```
 
-## 核心功能
+## 关键文件说明
 
-### 1. 历史朝代筛选
+### 首页门户
 
-系统以唐、宋、元、明、清为主线，支持按朝代查看数据，也支持汇总查看全部数据。切换朝代后，地图、排行、类型占比和保存状态等图表会同步更新。
+- `src/HomePage.vue`：首页粒子模型、专题横向导航、滚轮进入专题区、hash 定位恢复。
+- `src/components/TopicParticleSculpture.vue`：专题卡片中的粒子雕塑效果。
+- `src/pageTransition.js`：内部页面跳转拦截、转场遮罩、专题加载进度。
+- `src/pageTransition.css`：转场样式、居中加载面板、全局返回按钮样式。
 
-### 2. 空间分布可视化
+### 空间分布大屏
 
-中心区域展示中国古建筑空间分布图，并结合省份排行图呈现不同朝代下的区域分布差异。当前重点统计省份包括北京、山西、陕西、河南、浙江、江苏、福建、安徽和湖南等。
+- `src/apps/spatial/App.vue`：主页面、全国地图、省级地图切换、图表初始化。
+- `src/apps/spatial/assets/china.json`：全国地图数据。
+- `src/apps/spatial/assets/maps/province/*.json`：省级地图数据。
+- `src/apps/spatial/assets/1911 年前全国文物保护单位数据.xlsx`：空间分布使用的文保单位数据源。
 
-### 3. 建筑类型与工艺趋势
+### 历史演化大屏
 
-系统从皇宫、官府、民居、桥梁等建筑类型出发，结合斗拱、砖石、园林、彩绘等风格指标，展示不同历史阶段古建筑类型与营造工艺的变化趋势。
+- `src/apps/history/App.vue`：历史专题根组件。
+- `src/apps/history/components/HistoryChart.vue`：历史演化大屏核心逻辑，包含地图、朝代切换、建筑详情、热力图等。
+- `src/apps/history/assets/中国_省.geojson`：当前实际使用的中国省级 GeoJSON。
+- `src/apps/history/assets/buildings/`：代表性建筑图片。
 
-### 4. 代表建筑详情
+### 形制结构大屏
 
-点击地图省份后，下方会展示该省对应朝代的代表建筑列表。点击建筑卡片可查看建筑图片、年代、朝代、城市和详情介绍。
+- `src/apps/structure/App.vue`：结构专题主体布局、筛选、图表和可调面板。
+- `src/apps/structure/components/ChinaDistributionMap.vue`：基于 GeoJSON 自绘 SVG 中国地图。
+- `src/apps/structure/components/DataTable.vue`：结构样本表格，估算值会以红色小徽标标识。
+- `src/apps/structure/components/BaseChart.vue`：ECharts 基础封装。
+- `src/apps/structure/assets/maps/china.json`：结构专题地图数据。
+- `src/apps/structure/data/architectureData.js`：结构样本主数据与最终合并导出。
+- `src/apps/structure/data/architectureSupplement.js`：补充样本。
+- `src/apps/structure/data/architectureMoreSupplement.js`：更多补充样本。
+- `src/apps/structure/data/architectureLatestSupplement.js`：最新补充样本。
+
+### 材料工艺大屏
+
+- `src/apps/materials/App.vue`：材料工艺专题主页面。
+- `src/apps/materials/components/SourceMap.vue`：材料来源地图和飞线。
+- `src/apps/materials/china.json`：材料专题地图数据。
+- `src/apps/materials/components/`：材料占比、修复流程、桑基图、树图、时间线等图表组件。
+
+### 保护风险大屏
+
+- `src/apps/protection/App.vue`：保护风险专题主页面与面板交互。
+- `src/apps/protection/components/architectureData.js`：保护风险专题内置统计数据。
+- `src/apps/protection/components/`：风险雷达、状态饼图、病害排行、交叉热力图、资金投入、数字化进度等图表组件。
+
+## 地图数据位置
+
+| 专题 | 地图数据 | 使用位置 |
+| --- | --- | --- |
+| 空间分布 | `src/apps/spatial/assets/china.json` | `src/apps/spatial/App.vue` |
+| 空间分布 | `src/apps/spatial/assets/maps/province/*.json` | `src/apps/spatial/App.vue` 动态加载 |
+| 历史演化 | `src/apps/history/assets/中国_省.geojson` | `src/apps/history/components/HistoryChart.vue` |
+| 形制结构 | `src/apps/structure/assets/maps/china.json` | `src/apps/structure/components/ChinaDistributionMap.vue` |
+| 材料工艺 | `src/apps/materials/china.json` | `src/apps/materials/components/SourceMap.vue` |
+
+保护风险大屏当前没有使用 GeoJSON 地图边界数据。
 
 ## 数据说明
 
-- 地图数据位于 `src/assets/map.json` 与 `src/assets/china.geojson`。
-- 建筑图片位于 `src/assets/buildings/`，当前包含 42 张代表性古建筑图片。
-- 统计数据和建筑详情数据目前内置在 `src/components/HistoryChart.vue` 中，包含朝代、省份、建筑类型、保存状态、修缮次数和建筑简介等信息。
-- 数据来源字段中使用了方志、考古、国保、三普等标签，便于后续替换为更完整的数据源或接口服务。
+- 项目中的专题数据多数以内置 JS、JSON、GeoJSON、图片和 Excel 文件形式存放在 `src/apps/*` 目录内。
+- 形制结构专题的建筑样本包含部分估算字段。界面会保留数值显示，并用红色 `估` 徽标提示估算口径。
+- 空间分布专题会读取 Excel 数据；若读取失败，页面内有兜底模拟数据。
+- 数据字段中的 `source` / `sourceNote` 用于记录来源链接与口径说明，便于后续替换为更完整的数据接口。
 
-## 构建与部署
+## 构建说明
 
-执行以下命令生成静态资源：
-
-```bash
-npm run build
-```
-
-构建产物会输出到 `dist/` 目录，可部署到 GitHub Pages、Vercel、Netlify、Nginx 等静态托管服务。
-
-如果部署到 GitHub Pages 的仓库子路径，例如：
-
-```text
-https://<username>.github.io/<repository-name>/
-```
-
-需要在 `vite.config.js` 中配置 `base`：
+当前 `vite.config.js` 使用多页面入口：
 
 ```js
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-
-export default defineConfig({
-  base: '/<repository-name>/',
-  plugins: [vue()],
-})
+input: {
+  main: resolve(__dirname, 'index.html'),
+  protection: resolve(__dirname, 'protection.html'),
+  structure: resolve(__dirname, 'structure.html'),
+  materials: resolve(__dirname, 'materials.html'),
+  spatial: resolve(__dirname, 'spatial.html'),
+  history: resolve(__dirname, 'history.html')
+}
 ```
 
-如果部署到独立域名或 Vercel、Netlify 的根路径，通常无需修改 `base`。
+项目配置了：
 
-## 可维护方向
+```js
+base: './'
+```
 
-- 将内置统计数据拆分为独立 JSON 文件，降低组件体积。
-- 接入后端接口或数据库，支持动态数据管理。
-- 增加搜索、筛选、对比和导出功能。
-- 补充更多省份、建筑类型、材料工艺和保护修缮数据。
-- 为 GitHub Pages 增加自动化部署工作流。
+这样构建后的 `dist/` 更适合 Electron、本地静态预览和相对路径部署。
+
+## 常见问题
+
+### 1. 专题页返回首页后为什么能定位到对应粒子卡片？
+
+专题页返回链接使用 hash，例如：
+
+```text
+./index.html#topic-structure
+```
+
+`HomePage.vue` 会在挂载时读取 hash，并横向滚动到对应专题。
+
+### 2. 为什么专题跳转进度不是严格真实资源进度？
+
+当前进度是页面转场中的体验型加载进度。它基于跳转动画模拟推进，并在专题页进入时补到 100%。如果需要真实资源加载百分比，需要各专题页上报资源加载状态，成本更高。
+
+### 3. 为什么构建时有 chunk 体积警告？
+
+历史演化、Three.js、ECharts 和大体积地图 / 模型资源会让部分 chunk 超过 Vite 默认警告阈值。当前警告不影响构建成功。后续可以通过动态导入或 `manualChunks` 做拆包优化。
+
+## 后续维护建议
+
+- 将各专题内置数据逐步拆分为独立 JSON 或后端接口。
+- 为地图数据建立统一目录和命名规范，减少不同专题重复维护中国地图数据。
+- 对大体积页面做动态导入和按专题拆包，降低首屏加载压力。
+- 补充数据来源说明和许可证文件，方便对外发布或参赛归档。
+- 为关键组件增加最小化测试或截图检查，避免后续布局改动影响大屏展示。
 
 ## 许可证
 
-当前仓库暂未声明许可证。如需开源发布，建议根据作品授权范围补充 `LICENSE` 文件。
+当前仓库暂未声明开源许可证。如需公开发布，请根据作品授权范围补充 `LICENSE` 文件。

@@ -1,85 +1,79 @@
 <template>
   <div class="screen-page">
+    <a class="portal-return-link" href="./index.html#topic-materials" aria-label="返回材料专题" title="返回材料专题"></a>
+
     <header class="screen-header panel-card">
       <div class="title-left">
-        <div class="main-title">古建筑材料与工艺可视化大屏</div>
-        <div class="sub-title">细节出彩 · 材料构成 · 榫卯体系 · 来源分布 · 建造工序</div>
+        <div class="main-title">材料工艺数据可视化大屏</div>
+        <div class="sub-title">病害识别 · 材料诊断 · 工法匹配 · 修复施工 · 监测回访</div>
       </div>
       <div class="title-right">
         <div class="date-pill">{{ nowText }}</div>
         <div class="mini-stats">
-          <div class="mini-item">
-            <span class="label">材料类别</span>
-            <span class="value">6</span>
-          </div>
-          <div class="mini-item">
-            <span class="label">工艺类型</span>
-            <span class="value">5</span>
-          </div>
-          <div class="mini-item">
-            <span class="label">来源节点</span>
-            <span class="value">6</span>
-          </div>
+         
         </div>
       </div>
     </header>
 
     <main class="screen-body">
       <section class="column left-col">
-        <PanelCard title="主体材料使用占比" subtitle="木 / 砖 / 石 / 土 / 琉璃等占比" badge="环图">
+        <PanelCard title="材料病害类型占比" subtitle="开裂 / 腐蚀 / 风化 / 空鼓 / 褪色等占比" badge="诊断">
           <MaterialPie />
         </PanelCard>
-        <PanelCard title="装饰工艺数量统计" subtitle="木雕 / 砖雕 / 石雕 / 彩绘 / 匾额" badge="柱图">
+        <PanelCard title="修复工法介入强度" subtitle="清洗 / 加固 / 填补 / 防护 / 色差校正" badge="工法">
           <DecorBar />
         </PanelCard>
-        <PanelCard title="榫卯结构使用频率" subtitle="典型榫卯结构应用热度" badge="频率">
+        <PanelCard title="改性传统灰浆关键性能恢复指数" subtitle="强度、附着、耐候、含水率等恢复表现" badge="评估">
           <MortiseBar />
         </PanelCard>
       </section>
 
       <section class="column center-col">
-        <PanelCard title="构件来源与产地分布" subtitle="地图飞线展示材料和构件来源" badge="地图">
-          <SourceMap />
+       <PanelCard title="修复项目与材料来源分布" subtitle="地图飞线展示修复对象、补配材料和技术支援来源" badge="地图">
+          <SourceMap @chart-click="handleChartClick" />
         </PanelCard>
-        <PanelCard title="建造工序与工艺流程" subtitle="从选材到装饰修缮的工艺链路" badge="流程">
+ <PanelCard title="材料修复闭环流程" subtitle="从检测建档到回访监测的修复决策链路" badge="流程">
           <ProcessFlow />
         </PanelCard>
       </section>
 
       <section class="column right-col">
-        <PanelCard title="用材年代分布" subtitle="不同历史时期构件和材料数量" badge="时间轴">
+         <PanelCard title="修复阶段任务趋势" subtitle="检测、试验、施工、养护、复检任务量变化" badge="时间轴">
           <TimelineChart />
         </PanelCard>
-        <PanelCard title="材料与工艺关联分析" subtitle="材料流向具体工艺类型" badge="桑基图">
+        <PanelCard title="病害—材料—修复方案关联" subtitle="病害类型流向材料对象与对应处理方案" badge="桑基图">
           <SankeyChart />
         </PanelCard>
-        <PanelCard title="构件分类体系" subtitle="构件层级与细分构成" badge="树图">
+         <PanelCard title="材料修复知识体系" subtitle="材料、病害、工法与监测指标层级关系" badge="树图">
           <TreeChart />
         </PanelCard>
       </section>
     </main>
 
     <aside class="highlight-bar panel-card">
-      <div class="highlight-title">工艺热点</div>
+      <div class="highlight-title">修复重点</div>
+
       <div class="highlight-list">
         <div class="highlight-item">
           <span class="dot"></span>
-          <span>徽州木雕：层次丰富，纹样细密</span>
+           <span>木构件：先控含水率，再做虫蛀封护与结构补强</span>
         </div>
         <div class="highlight-item">
           <span class="dot"></span>
-          <span>山西砖雕：装饰题材集中，节奏感强</span>
+           <span>砖石材：风化层清理后采用可逆性加固剂</span>
         </div>
         <div class="highlight-item">
           <span class="dot"></span>
-          <span>福建石雕：结构厚重，耐久性突出</span>
+         <span>彩绘层：微区清洗、颜料相容性测试与封存保护</span>
         </div>
         <div class="highlight-item">
           <span class="dot"></span>
-          <span>宫廷彩绘：色彩庄重，等级感鲜明</span>
+          <span>金属件：除锈钝化、防腐涂层与节点复检同步推进</span>
         </div>
       </div>
     </aside>
+
+    <PalaceStructure :visible="showPalaceModal" :building-type="currentBuilding" @close="showPalaceModal = false" />
   </div>
 </template>
 
@@ -94,9 +88,23 @@ import ProcessFlow from './components/ProcessFlow.vue'
 import TimelineChart from './components/TimelineChart.vue'
 import SankeyChart from './components/SankeyChart.vue'
 import TreeChart from './components/TreeChart.vue'
+import PalaceStructure from './components/PalaceStructure.vue'
 
 const now = ref(new Date())
 let timer = null
+
+const showPalaceModal = ref(false)
+const currentBuilding = ref('')
+
+const handleChartClick = (params) => {
+  if (params.name === '故宫') {
+    currentBuilding.value = 'palace'
+    showPalaceModal.value = true
+  } else if (params.name === '河南') {
+    currentBuilding.value = 'pavilion'
+    showPalaceModal.value = true
+  }
+}
 
 const pad = (n) => String(n).padStart(2, '0')
 const nowText = computed(() => {
@@ -221,15 +229,14 @@ onBeforeUnmount(() => clearInterval(timer))
 
 .highlight-title {
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 1000;
   color: var(--primary-deep);
 }
 
 .highlight-list {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 30px;
 }
 
 .highlight-item {

@@ -7,12 +7,13 @@ import { computed } from 'vue'
 import BaseChart from './BaseChart.vue'
 
 const data = [
-  { name: '木', value: 38 },
-  { name: '砖', value: 22 },
-  { name: '石', value: 16 },
-  { name: '土', value: 12 },
-  { name: '琉璃', value: 8 },
-  { name: '其他', value: 4 }
+  
+   { name: '裂缝', value: 29 },
+  { name: '腐蚀', value: 21 },
+  { name: '风化', value: 18 },
+  { name: '空鼓', value: 14 },
+  { name: '褪色', value: 11 },
+  { name: '污染', value: 7 }
 ]
 
 const option = computed(() => ({

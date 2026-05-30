@@ -7,11 +7,11 @@ import { computed } from 'vue'
 import * as echarts from 'echarts'
 import BaseChart from './BaseChart.vue'
 
-const labels = ['燕尾榫', '抱肩榫', '粽角榫', '穿带榫', '格角榫', '龙凤榫']
-const values = [88, 72, 61, 54, 43, 31]
+const labels = ['抗压强度', '表面附着', '耐候性', '防水性', '色差控制', '含水稳定']
+const values = [92, 88, 84, 79, 73, 69]
 
 const option = computed(() => ({
-  grid: { left: 20, right: 12, top: 10, bottom: 5, containLabel: true },
+  grid: { left: 20, right: 12, top: 15, bottom: 5, containLabel: true },
   tooltip: {
     trigger: 'axis',
     backgroundColor: 'rgba(255,255,255,0.94)',

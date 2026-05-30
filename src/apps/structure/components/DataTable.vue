@@ -57,10 +57,18 @@ defineProps({
 const isEstimated = (value) => String(value ?? '').includes('估');
 const firstSource = (source) => String(source).split(';')[0].trim();
 
+const displayValue = (value) =>
+  String(value)
+    .replace(/（\s*估\s*）/g, '')
+    .replace(/\(\s*估\s*\)/g, '')
+    .replace(/（\s*估[，,]\s*/g, '（')
+    .replace(/\(\s*估[，,]\s*/g, '(');
+
 const DataValue = (props) => {
   const value = props.value ?? '-';
-  const needsUnit = props.unit && value !== '-' && !String(value).includes(props.unit);
-  const text = `${value}${needsUnit ? props.unit : ''}`;
+  const cleanValue = value === '-' ? value : displayValue(value);
+  const needsUnit = props.unit && cleanValue !== '-' && !String(cleanValue).includes(props.unit);
+  const text = `${cleanValue}${needsUnit ? props.unit : ''}`;
 
   return h(
     'span',

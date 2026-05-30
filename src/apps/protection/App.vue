@@ -1,5 +1,7 @@
 ﻿<template>
   <div class="page-shell">
+    <a class="portal-return-link" href="./index.html#topic-protection" aria-label="返回保护专题" title="返回保护专题"></a>
+
     <header class="hero card-shell">
       <div class="hero-top">
         <div class="hero-copy">

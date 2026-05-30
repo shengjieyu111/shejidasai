@@ -25,24 +25,24 @@ const option = computed(() => ({
       nodeWidth: 15,
       emphasis: { focus: 'adjacency' },
       data: [
-        { name: '木', itemStyle: { color: '#B88B5A' } },
-        { name: '砖', itemStyle: { color: '#C1977B' } },
-        { name: '石', itemStyle: { color: '#8A9A9A' } },
-        { name: '琉璃', itemStyle: { color: '#7CB7A8' } },
-        { name: '榫卯' },
-        { name: '木雕' },
-        { name: '砖雕' },
-        { name: '石雕' },
-        { name: '彩绘' },
-        { name: '屋面装饰' }
+           { name: '裂缝', itemStyle: { color: '#B88B5A' } },
+        { name: '腐蚀', itemStyle: { color: '#C1977B' } },
+        { name: '风化', itemStyle: { color: '#8A9A9A' } },
+        { name: '褪色', itemStyle: { color: '#7CB7A8' } },
+        { name: '木材' },
+        { name: '砖石' },
+        { name: '金属' },
+        { name: '彩绘层' },
+        { name: '结构加固' },
+        { name: '表面防护' }
       ],
       links: [
-        { source: '木', target: '榫卯', value: 95 },
-        { source: '木', target: '木雕', value: 76 },
-        { source: '木', target: '彩绘', value: 62 },
-        { source: '砖', target: '砖雕', value: 52 },
-        { source: '石', target: '石雕', value: 47 },
-        { source: '琉璃', target: '屋面装饰', value: 31 }
+        { source: '裂缝', target: '木材', value: 84 },
+        { source: '裂缝', target: '结构加固', value: 68 },
+        { source: '腐蚀', target: '金属', value: 56 },
+        { source: '腐蚀', target: '表面防护', value: 47 },
+        { source: '风化', target: '砖石', value: 73 },
+        { source: '褪色', target: '彩绘层', value: 39 }
       ],
       lineStyle: { color: 'source', curveness: 0.55, opacity: 0.35 },
       label: { color: '#3E5E5D', fontSize: 11, fontWeight: 700 }

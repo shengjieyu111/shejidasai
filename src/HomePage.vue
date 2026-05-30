@@ -562,8 +562,13 @@ function createParticleSystem(positions, normals) {
   scene.add(particleSystem)
 }
 
+function isLeavingPage() {
+  return document.body.classList.contains('page-is-leaving')
+}
+
 function animate() {
   frameId = requestAnimationFrame(animate)
+  if (isLeavingPage()) return
 
   const elapsedTime = clock.getElapsedTime()
   if (particleSystem) {

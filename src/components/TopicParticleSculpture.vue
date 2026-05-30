@@ -955,9 +955,14 @@ function onPointerLeave() {
   pointerTarget.set(0, 0)
 }
 
+function isLeavingPage() {
+  return document.body.classList.contains('page-is-leaving')
+}
+
 function animate() {
   frameId = requestAnimationFrame(animate)
   if (!renderer || !scene || !camera) return
+  if (isLeavingPage()) return
 
   const elapsed = clock.getElapsedTime()
   pointerCurrent.lerp(pointerTarget, 0.1)

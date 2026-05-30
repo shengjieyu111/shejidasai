@@ -1,6 +1,6 @@
 <template>
   <div class="screen-page">
-    <a class="portal-return-link" href="./index.html#topic-materials" aria-label="返回材料专题" title="返回材料专题"></a>
+    <RouterLink class="portal-return-link" :to="{ name: 'home', hash: '#topic-materials' }" aria-label="返回材料专题" title="返回材料专题"></RouterLink>
 
     <header class="screen-header panel-card">
       <div class="title-left">

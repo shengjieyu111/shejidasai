@@ -130,7 +130,7 @@ function markCurrentHomeTopic(topicId) {
   }
 }
 
-export function setupPageTransitions() {
+export function setupPageTransitions(router) {
   if (typeof window === 'undefined' || window.__sinoCraftPageTransitions) return
   window.__sinoCraftPageTransitions = true
 
@@ -150,6 +150,9 @@ export function setupPageTransitions() {
   const loaderPercent = overlay.querySelector('.page-transition__loader-percent')
   let progressTimer = 0
   let lastPercentTextUpdate = 0
+  let routerTransitionMode = ''
+  let routerTransitionTopicId = ''
+  let routerTransitionTimer = 0
 
   const setProgressMode = (mode) => {
     document.body.classList.toggle('page-progress-return', mode === 'return')
@@ -263,6 +266,78 @@ export function setupPageTransitions() {
     })
   }
 
+  const resetProgress = () => {
+    stopProgressTimer()
+    document.body.classList.remove('page-has-topic-progress')
+    clearProgressMode()
+    setProgress(0, true)
+  }
+
+  const startRouterTransition = (mode, topicId = '') => {
+    routerTransitionMode = mode
+    routerTransitionTopicId = topicId
+
+    if (mode === 'topic') startTopicProgress(topicId)
+    if (mode === 'return') startReturnProgress()
+
+    document.body.classList.add('page-is-leaving')
+  }
+
+  const finishRouterTransition = (failure) => {
+    window.clearTimeout(routerTransitionTimer)
+    routerTransitionTimer = 0
+    document.body.classList.remove('page-is-leaving')
+
+    if (failure) {
+      resetProgress()
+      routerTransitionMode = ''
+      routerTransitionTopicId = ''
+      return
+    }
+
+    if (routerTransitionMode === 'topic') finishTopicProgress(routerTransitionTopicId)
+    if (routerTransitionMode === 'return') finishReturnProgress()
+
+    if (routerTransitionMode) {
+      document.body.classList.add('page-is-entering')
+      window.setTimeout(() => document.body.classList.remove('page-is-entering'), 720)
+    }
+
+    routerTransitionMode = ''
+    routerTransitionTopicId = ''
+  }
+
+  const setupRouterTransitions = () => {
+    if (!router?.beforeEach || !router?.afterEach) return
+
+    router.beforeEach((to, from) => {
+      if (prefersReducedMotion || !from.name) return true
+
+      const toTopicId = TOPIC_PAGE_IDS.has(to.meta?.topicId) ? to.meta.topicId : ''
+      const fromTopicId = TOPIC_PAGE_IDS.has(from.meta?.topicId) ? from.meta.topicId : ''
+
+      if (from.meta?.isHome && toTopicId) {
+        startRouterTransition('topic', toTopicId)
+      } else if (fromTopicId && to.meta?.isHome) {
+        startRouterTransition('return', fromTopicId)
+      } else {
+        return true
+      }
+
+      return new Promise((resolve) => {
+        routerTransitionTimer = window.setTimeout(resolve, TRANSITION_MS)
+      })
+    })
+
+    router.afterEach((to, from, failure) => {
+      finishRouterTransition(failure)
+    })
+
+    router.onError?.(() => {
+      finishRouterTransition(true)
+    })
+  }
+
   const enteringTopicId = !prefersReducedMotion ? getTopicProgressEntryId() : ''
   const returningTopicId = !prefersReducedMotion && !enteringTopicId ? getReturnProgressEntryId() : ''
   const completeProgressOnEnter = Boolean(enteringTopicId || returningTopicId)
@@ -274,6 +349,8 @@ export function setupPageTransitions() {
     document.body.classList.add('page-is-entering')
     window.setTimeout(() => document.body.classList.remove('page-is-entering'), 720)
   }
+
+  setupRouterTransitions()
 
   document.addEventListener('click', (event) => {
     if (prefersReducedMotion || isModifiedClick(event)) return
@@ -328,9 +405,6 @@ export function setupPageTransitions() {
       return
     }
 
-    stopProgressTimer()
-    document.body.classList.remove('page-has-topic-progress')
-    clearProgressMode()
-    setProgress(0, true)
+    resetProgress()
   })
 }

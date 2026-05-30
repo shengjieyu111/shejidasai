@@ -1,7 +1,7 @@
 <template>
   <main class="dashboard-shell" :class="{ 'is-resizing': resizeState.active, 'is-analysis-fullscreen': isAnalysisFullScreen }">
     <header class="topbar">
-      <a class="structure-return-link" href="./index.html#topic-structure" aria-label="返回结构专题" title="返回结构专题"></a>
+      <RouterLink class="structure-return-link" :to="{ name: 'home', hash: '#topic-structure' }" aria-label="返回结构专题" title="返回结构专题"></RouterLink>
 
       <div class="topbar-title">
         <p>ARCHITECTURE STRUCTURE DATA</p>

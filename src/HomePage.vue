@@ -37,7 +37,7 @@
             <div class="slide-story">
               <p v-for="paragraph in project.story" :key="paragraph">{{ paragraph }}</p>
             </div>
-            <a :href="project.entry">进入页面</a>
+            <RouterLink :to="project.entry">进入页面</RouterLink>
           </div>
 
           <div class="slide-visual" :class="`scene-${project.id}`" :style="{ '--accent': project.color }">
@@ -66,7 +66,8 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
@@ -92,7 +93,7 @@ const projects = [
       '这些点位并不只是坐标。它们是文明停留过的地方，是时间在大地上留下的印记。',
       '在空间分布大屏里，我们希望先陪你了解一个最朴素的问题：这些古建筑在哪里？而当你看见它们的位置，也会慢慢看见它们独特的文化和历史。',
     ],
-    entry: './spatial.html?from=spatial',
+    entry: { name: 'spatial' },
     color: '#4f8aa0',
   },
   {
@@ -108,7 +109,7 @@ const projects = [
       '历史演化图谱，是一条可以慢慢阅读的时间长河。你要看到的不只是“它属于哪个时代”，而是它怎样从历史深处走来，又怎样带着一个时代的气质，留在今天。',
       '当时间被看见，古建筑也就不再遥远。',
     ],
-    entry: './history.html?from=history',
+    entry: { name: 'history' },
     color: '#c35d4f',
   },
   {
@@ -117,14 +118,14 @@ const projects = [
     shortName: '结构',
     name: '形制结构分析',
     kicker: 'Structure Dashboard',
-    sectionTitle: '走近建筑，读懂它沉默的秩序',
+    sectionTitle: '我们走近建筑，读懂它沉默的秩序',
     description: '如果再靠近一些，你会发现，古建筑的美并不只在外表。',
     story: [
       '它的端正、舒展、克制与庄重，背后都有属于东方营造的分寸。那些不轻易显露的秩序，藏在梁柱之间，也藏在空间的呼吸里。',
       '形制结构分析大屏，不是把建筑拆成冰冷的构件，而是陪你慢慢读懂它为什么这样存在。为什么它看起来庄重，为什么它显得舒展，为什么千年之后，仍然有一种安静而稳定的力量。',
       '我们希望你在这里看到的，不只是建筑的形，更是形背后的精神。',
     ],
-    entry: './structure.html?from=structure',
+    entry: { name: 'structure' },
     color: '#8b6f3d',
   },
   {
@@ -140,7 +141,7 @@ const projects = [
       '材料工艺大屏，想带你看见一座建筑如何从木石砖瓦开始，慢慢拥有自己的生命。它是被建造出来的，也是被选择、打磨、连接与守护出来的。',
       '在这里，数据不再只是数字。它像一束光，照进梁架深处，让匠心变得可以被看见，也可以被记住。',
     ],
-    entry: './materials.html?from=materials',
+    entry: { name: 'materials' },
     color: '#4f8d70',
   },
   {
@@ -156,7 +157,7 @@ const projects = [
       '看见它们，是开始。理解它们之后，更重要的是守护它们。',
       '保护风险看板，是华构工韵面向未来的一束光。它让古建筑当下的状态被看见，也让保护不再只是情感上的惋惜，而成为更清晰、更主动的行动。',
     ],
-    entry: './protection.html?from=protection',
+    entry: { name: 'protection' },
     color: '#b34c68',
   },
 ]
@@ -167,6 +168,7 @@ const topicsSection = ref(null)
 const activeIndex = ref(0)
 const loadState = ref('模型加载中')
 const activeProject = computed(() => projects[activeIndex.value] || projects[0])
+const route = useRoute()
 
 let scene
 let camera
@@ -176,6 +178,7 @@ let particleSystem
 let frameId = 0
 let hashRestoreTimer = 0
 let disposed = false
+let isHomeActive = true
 let clock
 let isPointerOverStage = false
 
@@ -226,11 +229,12 @@ function onTopicWheel(event) {
   topicScroller.value.scrollBy({ left: event.deltaY, behavior: 'smooth' })
 }
 
-function getProjectIndexFromHash(hash = window.location.hash) {
+function getProjectIndexFromHash(hash = route.hash || window.location.hash) {
   const prefix = '#topic-'
-  if (!hash.startsWith(prefix)) return -1
+  const markerIndex = hash.indexOf(prefix)
+  if (markerIndex < 0) return -1
 
-  const topicId = decodeURIComponent(hash.slice(prefix.length))
+  const topicId = decodeURIComponent(hash.slice(markerIndex + prefix.length))
   return projects.findIndex((project) => project.id === topicId)
 }
 
@@ -568,7 +572,7 @@ function isLeavingPage() {
 
 function animate() {
   frameId = requestAnimationFrame(animate)
-  if (isLeavingPage()) return
+  if (!isHomeActive || isLeavingPage()) return
 
   const elapsedTime = clock.getElapsedTime()
   if (particleSystem) {
@@ -617,6 +621,23 @@ onMounted(() => {
   restoreTopicFromHash()
   window.addEventListener('hashchange', restoreTopicFromHash)
 })
+
+onActivated(() => {
+  isHomeActive = true
+  restoreTopicFromHash()
+  onResize()
+})
+
+onDeactivated(() => {
+  isHomeActive = false
+})
+
+watch(
+  () => route.hash,
+  () => {
+    if (isHomeActive) restoreTopicFromHash()
+  },
+)
 
 onBeforeUnmount(() => {
   disposed = true

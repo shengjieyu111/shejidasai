@@ -1,6 +1,6 @@
 ﻿<template>
   <div class="page-shell">
-    <a class="portal-return-link" href="./index.html#topic-protection" aria-label="返回保护专题" title="返回保护专题"></a>
+    <RouterLink class="portal-return-link" :to="{ name: 'home', hash: '#topic-protection' }" aria-label="返回保护专题" title="返回保护专题"></RouterLink>
 
     <header class="hero card-shell">
       <div class="hero-top">

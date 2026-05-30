@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard-container">
-    <a class="portal-return-link" href="./index.html#topic-spatial" aria-label="返回空间专题" title="返回空间专题"></a>
+    <RouterLink class="portal-return-link" :to="{ name: 'home', hash: '#topic-spatial' }" aria-label="返回空间专题" title="返回空间专题"></RouterLink>
 
     <!-- 顶部标题栏 -->
     <div class="header">
@@ -475,7 +475,7 @@ initTimeTrendChart() {
 };
 </script>
 
-<style>
+<style scoped>
 html, body, #app {
   width: 100%;
   height: 100%;

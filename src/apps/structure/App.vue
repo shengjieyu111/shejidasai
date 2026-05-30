@@ -1,7 +1,9 @@
 <template>
   <main class="dashboard-shell" :class="{ 'is-resizing': resizeState.active, 'is-analysis-fullscreen': isAnalysisFullScreen }">
     <header class="topbar">
-      <div>
+      <a class="structure-return-link" href="./index.html#topic-structure" aria-label="返回结构专题" title="返回结构专题"></a>
+
+      <div class="topbar-title">
         <p>ARCHITECTURE STRUCTURE DATA</p>
         <h1>中国古建筑形制结构数据可视化</h1>
       </div>
@@ -589,16 +591,53 @@ const ruleBarOption = computed(() => ({
 }
 
 .topbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  gap: 14px;
   min-height: 0;
-  padding: 9px 16px;
+  padding: 9px 14px;
   border: 1px solid rgba(98, 138, 138, 0.24);
   border-radius: 8px;
   background: rgba(248, 253, 252, 0.78);
   box-shadow: var(--shadow);
+}
+
+.structure-return-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(98, 138, 138, 0.28);
+  border-radius: 50%;
+  color: white;
+  background: rgba(37, 71, 70, 0.78);
+  box-shadow: 0 8px 18px rgba(17, 47, 45, 0.16);
+  font-size: 0;
+  text-decoration: none;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.16s ease;
+}
+
+.structure-return-link::before {
+  content: "<";
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.structure-return-link:hover,
+.structure-return-link:focus-visible {
+  background: var(--teal-900);
+  border-color: rgba(98, 138, 138, 0.48);
+  transform: translateX(-1px);
+}
+
+.topbar-title {
+  min-width: 0;
 }
 
 .topbar p,
@@ -620,6 +659,8 @@ const ruleBarOption = computed(() => ({
 
 .topbar-meta {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 10px;
   color: var(--teal-700);
   font-size: 12px;

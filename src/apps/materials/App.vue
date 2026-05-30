@@ -1,5 +1,7 @@
 <template>
   <div class="screen-page">
+    <a class="portal-return-link" href="./index.html#topic-materials" aria-label="返回材料专题" title="返回材料专题"></a>
+
     <header class="screen-header panel-card">
       <div class="title-left">
         <div class="main-title">材料工艺数据可视化大屏</div>

@@ -1,5 +1,7 @@
 <template>
   <div class="dashboard-container">
+    <a class="portal-return-link" href="./index.html#topic-spatial" aria-label="返回空间专题" title="返回空间专题"></a>
+
     <!-- 顶部标题栏 -->
     <div class="header">
       <h1>中国古建筑空间分布数据大屏</h1>

@@ -1,4 +1,5 @@
 <template>
+  <a class="portal-return-link" href="./index.html#topic-history" aria-label="返回历史专题" title="返回历史专题"></a>
   <HistoryChart />
 </template>
 
